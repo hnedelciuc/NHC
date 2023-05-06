@@ -53,6 +53,8 @@ TECHNICAL IMPLEMENTATION DETAILS
 
 * Also, .NET's symmetric encryption capabilities (AES, TripleDES, RC2) are used for 128, 192, and 256bit encryption,
 as well as my own (really bad, amateurish, not-to-be-ever-really-used-by-anyone) encryption algorithm called NeedleCrypt.
+* It uses TreeViewMS (TreeView MultiSelect) class developed by (C) Stephane Rodriguez, 2002 (http://www.arstdesign.com/articles/treeviewms.html),
+which adds the ability to select multiple entries in a TreeView in your WinForms app.
 
 ----------------------------------------------
 REASONS FOR MAKING THIS CODE AVAILABLE ONLINE
