@@ -1,0 +1,23 @@
+diff a/Crypt/CryptForm.Designer.cs b/Crypt/CryptForm.Designer.cs	(rejected hunks)
+@@ -491,21 +491,6 @@
+             this.panel1.Size = new System.Drawing.Size(646, 565);
+             this.panel1.TabIndex = 27;
+             // 
+-            // treeView1
+-            // 
+-            this.treeView1.AllowDrop = true;
+-            this.treeView1.Cursor = System.Windows.Forms.Cursors.Default;
+-            this.treeView1.Location = new System.Drawing.Point(8, 30);
+-            this.treeView1.Name = "treeView1";
+-            this.treeView1.SelectedNodes = ((System.Collections.ArrayList)(resources.GetObject("treeView1.SelectedNodes")));
+-            this.treeView1.Size = new System.Drawing.Size(540, 340);
+-            this.treeView1.TabIndex = 28;
+-            this.treeView1.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterCheck);
+-            this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView1_BeforeExpand);
+-            this.treeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
+-            this.treeView1.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView1_DragEnter);
+-            this.treeView1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.treeView1_KeyDown);
+-            // 
+             // tableLayoutPanel2
+             // 
+             this.tableLayoutPanel2.ColumnCount = 2;
