@@ -147,7 +147,6 @@ namespace Crypt
                                 comboBoxSplitArchiveSize.SelectedIndex = -1;
                             }
                         }
-                        else return;
                     }
 
                     ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Update, HelperService.cryptionAlgorithm, HelperService.importedPaths, selectedPaths, (bool)frmProcessing.extractAll, overwriteFilesSetting, outputFileName, keyFileName, checkBoxIsSplitArchive.Checked ? (long)splitArchiveSize : 0, password);
@@ -953,7 +952,6 @@ namespace Crypt
                                     comboBoxSplitArchiveSize.SelectedIndex = -1;
                                 }
                             }
-                            else return;
                         }
 
                         ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Encrypt, HelperService.cryptionAlgorithm, HelperService.importedPaths, compressionLevel, outputFileName, keyFileName, checkBoxIsSplitArchive.Checked ? (long)splitArchiveSize : 0, password);
@@ -1821,6 +1819,7 @@ namespace Crypt
             {
                 comboBoxSplitArchiveSize.Items.RemoveAt(comboBoxSplitArchiveSize.Items.Count - 1);
             }
+            else comboBoxSplitArchiveSize.Text = string.Empty;
 
             comboBoxSplitArchiveSize.SelectionStart = comboBoxSplitArchiveSize.Text?.Length ?? 0;
 
