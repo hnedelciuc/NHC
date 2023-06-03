@@ -190,7 +190,7 @@ internal class HelperService
                         if (HelperService.backgroundWorkerClosePending)
                             break;
 
-                        string relativePath = Path.Combine(rootDirectoryName, LongDirectory.TrimPath(directory.Substring(path.Length)));
+                        string relativePath = LongDirectory.Combine(rootDirectoryName, LongDirectory.TrimPath(directory.Substring(path.Length)));
                         object pathObj = new { relativePath, fullPath = directory, isDirectory = true, uncompressedFileSize = 0 };
                         if (!importedPaths.Contains(pathObj))
                         {
@@ -205,7 +205,7 @@ internal class HelperService
                         if (HelperService.backgroundWorkerClosePending)
                             break;
 
-                        string relativePath = Path.Combine(rootDirectoryName,
+                        string relativePath = LongDirectory.Combine(rootDirectoryName,
                             ((LongDirectory.TrimPath(file.Substring(path.Length)) == String.Empty) ? "" :
                             LongDirectory.TrimPath(file.Substring(path.Length))));
 
@@ -1157,7 +1157,7 @@ internal class HelperService
     {
         try
         {
-            CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\SendTo\Needle in a Haystack in a Crypt.lnk"));
+            CreateShortcut(LongDirectory.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\SendTo\Needle in a Haystack in a Crypt.lnk"));
         }
         catch (Exception ex)
         {

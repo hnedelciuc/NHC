@@ -3,6 +3,7 @@
 // as a response to this question:
 // https://stackoverflow.com/questions/5188527/how-to-deal-with-files-with-a-name-longer-than-259-characters
 //
+// NOTE: The code has been slightly modified/adapted by Horia Nedelciuc.
 
 
 using System;
@@ -31,7 +32,7 @@ internal static class LongFile
         else
         {
             bool ok = NativeMethods.DeleteFileW(GetWin32LongPath(path));
-            if (!ok) ThrowWin32Exception();
+            if (!ok) ThrowWin32Exception($"Cannot delete path: '{path}'");
         }
     }
 
@@ -131,7 +132,7 @@ internal static class LongFile
         else
         {
             var ok = NativeMethods.CopyFileW(GetWin32LongPath(sourceFileName), GetWin32LongPath(destFileName), !overwrite);
-            if (!ok) ThrowWin32Exception();
+            if (!ok) ThrowWin32Exception($"Cannot copy source path: '{sourceFileName}' to destination path: '{destFileName}'");
         }
     }
 
@@ -141,7 +142,7 @@ internal static class LongFile
         else
         {
             var ok = NativeMethods.MoveFileW(GetWin32LongPath(sourceFileName), GetWin32LongPath(destFileName));
-            if (!ok) ThrowWin32Exception();
+            if (!ok) ThrowWin32Exception($"Cannot move source path: '{sourceFileName}' to destination path: '{destFileName}'");
         }
     }
 
@@ -231,7 +232,7 @@ internal static class LongFile
         else
         {
             var longFilename = GetWin32LongPath(path);
-            return (FileAttributes)NativeMethods.GetFileAttributesW(path);
+            return (FileAttributes)NativeMethods.GetFileAttributesW(longFilename);
         }
     }
 
@@ -254,7 +255,7 @@ internal static class LongFile
     {
         if (filename.Length >= MAX_PATH) filename = GetWin32LongPath(filename);
         SafeFileHandle hfile = NativeMethods.CreateFile(filename, (int)NativeMethods.FILE_GENERIC_WRITE, NativeMethods.FILE_SHARE_NONE, IntPtr.Zero, NativeMethods.CREATE_ALWAYS, 0, IntPtr.Zero);
-        if (hfile.IsInvalid) ThrowWin32Exception();
+        if (hfile.IsInvalid) ThrowWin32Exception($"Cannot create file for write: '{filename}'");
         return hfile;
     }
 
@@ -265,7 +266,7 @@ internal static class LongFile
         if (hfile.IsInvalid)
         {
             hfile = NativeMethods.CreateFile(filename, (int)NativeMethods.FILE_GENERIC_WRITE, NativeMethods.FILE_SHARE_NONE, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
-            if (hfile.IsInvalid) ThrowWin32Exception();
+            if (hfile.IsInvalid) ThrowWin32Exception($"Cannot write/open file for append: '{filename}'");
         }
         return hfile;
     }
@@ -274,7 +275,7 @@ internal static class LongFile
     {
         if (filename.Length >= MAX_PATH) filename = GetWin32LongPath(filename);
         SafeFileHandle hfile = NativeMethods.CreateFile(filename, (int)NativeMethods.FILE_GENERIC_READ, NativeMethods.FILE_SHARE_READ, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
-        if (hfile.IsInvalid) ThrowWin32Exception();
+        if (hfile.IsInvalid) ThrowWin32Exception($"Cannot get file handle: '{filename}'");
         return hfile;
     }
 
@@ -282,7 +283,7 @@ internal static class LongFile
     {
         if (filename.Length >= MAX_PATH) filename = GetWin32LongPath(filename);
         SafeFileHandle hfile = NativeMethods.CreateFile(filename, (int)(NativeMethods.FILE_GENERIC_READ | NativeMethods.FILE_GENERIC_WRITE | NativeMethods.FILE_WRITE_ATTRIBUTES), NativeMethods.FILE_SHARE_NONE, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
-        if (hfile.IsInvalid) ThrowWin32Exception();
+        if (hfile.IsInvalid) ThrowWin32Exception($"Cannot get file handle for writing: '{filename}'");
         return hfile;
     }
 
@@ -299,46 +300,29 @@ internal static class LongFile
             hfile = NativeMethods.CreateFile(longFilename, (int)NativeMethods.FILE_GENERIC_READ, NativeMethods.FILE_SHARE_READ, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
         }
 
-        if (hfile.IsInvalid) ThrowWin32Exception();
+        if (hfile.IsInvalid) ThrowWin32Exception($"Cannot get file stream: '{longFilename}'");
 
         return new System.IO.FileStream(hfile, access);
     }
 
     [DebuggerStepThrough]
-    internal static void ThrowWin32Exception()
+    internal static void ThrowWin32Exception(string msg = "")
     {
         int code = Marshal.GetLastWin32Error();
         if (code != 0)
         {
-            throw new System.ComponentModel.Win32Exception(code);
+            throw new System.ComponentModel.Win32Exception(code, msg);
         }
     }
 
     internal static string GetWin32LongPath(string path)
     {
-        if (path.StartsWith(@"\\?\")) return path;
-
-        if (path.StartsWith("\\"))
-        {
-            path = @"\\?\UNC\" + path.Substring(2);
-        }
-        else if (path.Contains(":"))
-        {
-            path = @"\\?\" + path;
-        }
-        else
-        {
-            var currdir = Environment.CurrentDirectory;
-            path = Combine(currdir, path);
-            while (path.Contains("\\.\\")) path = path.Replace("\\.\\", "\\");
-            path = @"\\?\" + path;
-        }
-        return path.TrimEnd('.'); ;
+        return LongDirectory.GetWin32LongPath(path);
     }
 
-    private static string Combine(string path1, string path2)
+    internal static string Combine(string path1, string path2)
     {
-        return path1.TrimEnd('\\') + "\\" + path2.TrimStart('\\').TrimEnd('.'); ;
+        return LongDirectory.Combine(path1, path2);
     }
 
     #endregion
@@ -433,7 +417,7 @@ internal class LongDirectory
                     var ok = NativeMethods.CreateDirectory(item, IntPtr.Zero);
                     if (!ok)
                     {
-                        ThrowWin32Exception();
+                        ThrowWin32Exception($"Cannot create directory: '{path}'");
                     }
                 }
             }
@@ -456,7 +440,7 @@ internal class LongDirectory
             if (!recursive)
             {
                 bool ok = NativeMethods.RemoveDirectory(GetWin32LongPath(path));
-                if (!ok) ThrowWin32Exception();
+                if (!ok) ThrowWin32Exception($"Cannot delete path: '{path}'");
             }
             else
             {
@@ -477,7 +461,7 @@ internal class LongDirectory
             directories = LongDirectory.GetDirectories(directory, null, System.IO.SearchOption.TopDirectoryOnly);
             DeleteDirectories(directories);
             bool ok = NativeMethods.RemoveDirectory(GetWin32LongPath(directory));
-            if (!ok) ThrowWin32Exception();
+            if (!ok) ThrowWin32Exception($"Cannot delete directory: '{directory}'");
         }
     }
 
@@ -492,7 +476,6 @@ internal class LongDirectory
         var attr = NativeMethods.GetFileAttributesW(path);
         return (attr != NativeMethods.INVALID_FILE_ATTRIBUTES && ((attr & NativeMethods.FILE_ATTRIBUTE_DIRECTORY) == NativeMethods.FILE_ATTRIBUTE_DIRECTORY));
     }
-
 
     internal static string[] GetDirectories(string path)
     {
@@ -515,7 +498,7 @@ internal class LongDirectory
     private static void internalGetDirectories(string path, string searchPattern, System.IO.SearchOption searchOption, ref List<string> dirs)
     {
         NativeMethods.WIN32_FIND_DATA findData;
-        IntPtr findHandle = NativeMethods.FindFirstFile(System.IO.Path.Combine(GetWin32LongPath(path), searchPattern), out findData);
+        IntPtr findHandle = NativeMethods.FindFirstFile(LongDirectory.Combine(GetWin32LongPath(path), searchPattern), out findData);
 
         try
         {
@@ -528,7 +511,7 @@ internal class LongDirectory
                     {
                         if (findData.cFileName != "." && findData.cFileName != "..")
                         {
-                            string subdirectory = System.IO.Path.Combine(path, findData.cFileName);
+                            string subdirectory = LongDirectory.Combine(path, findData.cFileName);
                             dirs.Add(GetCleanPath(subdirectory));
                             if (searchOption == SearchOption.AllDirectories)
                             {
@@ -541,7 +524,7 @@ internal class LongDirectory
             }
             else
             {
-                ThrowWin32Exception();
+                ThrowWin32Exception($"internalGetDirectories error: '{path}'");
             }
         }
         catch (Exception)
@@ -577,7 +560,7 @@ internal class LongDirectory
         foreach (var dir in dirs)
         {
             NativeMethods.WIN32_FIND_DATA findData;
-            IntPtr findHandle = NativeMethods.FindFirstFile(System.IO.Path.Combine(GetWin32LongPath(dir), searchPattern), out findData);
+            IntPtr findHandle = NativeMethods.FindFirstFile(LongDirectory.Combine(GetWin32LongPath(dir), searchPattern), out findData);
 
             try
             {
@@ -588,7 +571,7 @@ internal class LongDirectory
                     {
                         if ((findData.dwFileAttributes & System.IO.FileAttributes.Directory) == 0)
                         {
-                            string filename = System.IO.Path.Combine(dir, findData.cFileName);
+                            string filename = LongDirectory.Combine(dir, findData.cFileName);
                             files.Add(GetCleanPath(filename));
                         }
                     } while (NativeMethods.FindNextFile(findHandle, out findData));
@@ -614,7 +597,7 @@ internal class LongDirectory
         else
         {
             var ok = NativeMethods.MoveFileW(GetWin32LongPath(sourceDirName), GetWin32LongPath(destDirName));
-            if (!ok) ThrowWin32Exception();
+            if (!ok) ThrowWin32Exception($"Cannot move/rename file source: '{sourceDirName}' to destination: '{destDirName}'");
         }
     }
 
@@ -628,6 +611,7 @@ internal class LongDirectory
 
     internal static string GetDirectoryName(string path)
     {
+        path = path.Replace("/", "\\");
         var index = path.LastIndexOf("\\");
         if (index != -1) return path.Substring(0, index);
         else return String.Empty;
@@ -635,6 +619,7 @@ internal class LongDirectory
 
     internal static string GetJustDirectoryName(string path)
     {
+        path = path.Replace("/", "\\");
         var index = path.LastIndexOf("\\");
         if (index != -1) return TrimPath(path.Substring(index));
         else return String.Empty;
@@ -647,7 +632,7 @@ internal class LongDirectory
             var searchPattern = "*";
 
             NativeMethods.WIN32_FIND_DATA findData;
-            IntPtr findHandle = NativeMethods.FindFirstFile(System.IO.Path.Combine(GetWin32LongPath(path), searchPattern), out findData);
+            IntPtr findHandle = NativeMethods.FindFirstFile(LongDirectory.Combine(GetWin32LongPath(path), searchPattern), out findData);
 
             try
             {
@@ -682,41 +667,51 @@ internal class LongDirectory
     #region Helper methods
 
     [DebuggerStepThrough]
-    internal static void ThrowWin32Exception()
+    internal static void ThrowWin32Exception(string msg = "")
     {
         int code = Marshal.GetLastWin32Error();
         if (code != 0)
         {
-            throw new System.ComponentModel.Win32Exception(code);
+            throw new System.ComponentModel.Win32Exception(code, msg);
         }
     }
 
     internal static string GetWin32LongPath(string path)
     {
+        path = path.Replace("/", "\\");
 
         if (path.StartsWith(@"\\?\")) return path;
 
-        var newpath = path;
-        if (newpath.StartsWith("\\"))
+        if (path.StartsWith("\\\\"))
         {
-            newpath = @"\\?\UNC\" + newpath.Substring(2);
+            path = @"\\?\UNC\" + path.Substring(2);
         }
-        else if (newpath.Contains(":"))
+        else if (path.Contains(":"))
         {
-            newpath = @"\\?\" + newpath;
+            path = @"\\?\" + path;
         }
         else
         {
-            var currdir = Environment.CurrentDirectory;
-            newpath = Combine(currdir, newpath);
-            while (newpath.Contains("\\.\\")) newpath = newpath.Replace("\\.\\", "\\");
-            newpath = @"\\?\" + newpath;
+            string currdir;
+
+            if (path.StartsWith("\\"))
+            {
+                DirectoryInfo info = new DirectoryInfo(".");
+
+                currdir = info.Root.ToString();
+            }
+            else currdir = Environment.CurrentDirectory;
+
+            path = Combine(currdir, path);
+            while (path.Contains("\\.\\")) path = path.Replace("\\.\\", "\\");
+            path = @"\\?\" + path;
         }
-        return newpath.TrimEnd('.');
+        return path.TrimEnd('.');
     }
 
     internal static string GetCleanPath(string path)
     {
+        path = path.Replace("/", "\\");
         if (path.StartsWith(@"\\?\UNC\")) return @"\\" + path.Substring(8);
         if (path.StartsWith(@"\\?\")) return path.Substring(4);
         return path;
@@ -724,6 +719,8 @@ internal class LongDirectory
 
     private static List<string> GetAllPathsFromPath(string path)
     {
+        path = path.Replace('/', '\\');
+
         bool unc = false;
         var prefix = @"\\?\";
         if (path.StartsWith(prefix + @"UNC\"))
@@ -752,7 +749,7 @@ internal class LongDirectory
 
     internal static string Combine(string path1, string path2)
     {
-        return path1.TrimEnd('\\') + "\\" + path2.TrimStart('\\').TrimEnd('.');
+        return path1.Replace("/", "\\").TrimEnd('\\') + "\\" + path2.Replace("/", "\\").TrimStart('\\').TrimEnd('.');
     }
 
     #endregion

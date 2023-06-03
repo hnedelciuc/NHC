@@ -479,10 +479,10 @@ namespace Crypt
 
                         try
                         {
-                            string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                            string tempDirectory = LongDirectory.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                             while (LongDirectory.Exists(tempDirectory))
                             {
-                                tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                                tempDirectory = LongDirectory.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                             }
 
                             foreach (TreeNode node in selectedNodes)
@@ -502,7 +502,7 @@ namespace Crypt
                                     catch { }
 
                                 if (!isArchiveRoot)
-                                    HelperService.selectedPaths.Add(new { relativePath = dynamicNode.Tag.relativePath, fullPath = Path.Combine(tempDirectory, dynamicNode.Tag.relativePath), isDirectory = dynamicNode.Tag.isDirectory });
+                                    HelperService.selectedPaths.Add(new { relativePath = dynamicNode.Tag.relativePath, fullPath = LongDirectory.Combine(tempDirectory, dynamicNode.Tag.relativePath), isDirectory = dynamicNode.Tag.isDirectory });
                             }
                         }
                         catch { }

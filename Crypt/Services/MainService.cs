@@ -121,7 +121,7 @@ class MainService
         int stepNumber = 0;
 
         var archiveExtension = Path.GetExtension(archiveFileName);
-        var archiveNameWithoutExtension = Path.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
+        var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
 
         while (stepNumber < numberOfSteps)
         {
@@ -820,7 +820,7 @@ class MainService
         int nrOfEntriesProcessed = 0;
         int splitArchiveCount = 0;
         var archiveExtension = Path.GetExtension(archiveFileName);
-        var archiveNameWithoutExtension = Path.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
+        var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
         string archFileName = (string)archiveFileName.Clone();
         var processedFilesNames = new List<string>();
         int confirmation = 0;

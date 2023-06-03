@@ -77,7 +77,7 @@ internal class OpenArchiveService
         var splitCount = 0;
         var archFileName = $"{archiveFileName}";
         var archiveExtension = Path.GetExtension(archiveFileName);
-        var archiveNameWithoutExtension = Path.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
+        var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
         int count = 0;
         long files_length = 0;
         long globalpos = 0;
