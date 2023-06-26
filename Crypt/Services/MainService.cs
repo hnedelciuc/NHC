@@ -123,6 +123,9 @@ class MainService
         var archiveExtension = Path.GetExtension(archiveFileName);
         var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
 
+        // Report progress level = 0 if this is the first entry (i.e. file) added to the archive.
+        progress(0);
+
         while (stepNumber < numberOfSteps)
         {
             dynamic item = items[stepNumber];
@@ -221,12 +224,6 @@ class MainService
                     long initialFileSize = fileStreamOutput.Length;
                     long afterHeaderFileSize;
                     byte fourBlocksCompressionTypeByte = 0;
-
-                    // Report progress level = 0 if this is the first entry (i.e. file) added to the archive.
-                    if (stepNumber == 0)
-                    {
-                        progress(0);
-                    }
 
                     if (!isDirectory) // i.e. if isFile
                     {
