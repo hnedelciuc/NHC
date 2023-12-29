@@ -935,6 +935,7 @@ namespace Crypt
                                     comboBoxSplitArchiveSize.SelectedIndex = -1;
                                 }
                             }
+                            else if (checkBoxIsSplitArchive.Checked) { return; }
                         }
 
                         ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Encrypt, HelperService.cryptionAlgorithm, HelperService.importedPaths, compressionLevel, outputFileName, keyFileName, checkBoxIsSplitArchive.Checked ? (long)splitArchiveSize : 0, password);
