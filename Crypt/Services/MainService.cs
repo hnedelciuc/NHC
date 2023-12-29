@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2020 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Main Service.
 / Compression using the following algorithms:
@@ -16,8 +16,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 class MainService
 {
@@ -108,11 +113,11 @@ class MainService
         byte[] header_block;
 
         var numberOfSteps = items.Count;
-        var nrOfEntriesProcessed = 0;
         var splitArchiveNumberOfBlocks = isSplitArchive ? splitArchiveSize / blockSize : 0;
         var splitBlockCounter = 0;
         var splitCounter = 0;
         var splitPos = 0L;
+        var globalPos = 0L;
 
         string inputFileName, savedFileName;
 
@@ -124,7 +129,7 @@ class MainService
         var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
 
         // Report progress level = 0 if this is the first entry (i.e. file) added to the archive.
-        progress(0);
+        if (stepNumber == 0) progress(0);
 
         while (stepNumber < numberOfSteps)
         {
@@ -134,7 +139,8 @@ class MainService
             savedFileName = item.relativePath;
             string extension = Path.GetExtension(savedFileName);
             if (!string.IsNullOrEmpty(extension)) { extension = extension.Substring(1); }
-            long inputFileLength = 0;
+            var f_length = 0L;
+            var isProcessed = false;
 
             using (var outputHandle = LongFile.CreateFileForAppend(LongFile.GetWin32LongPath((splitCounter == 0) ? archiveFileName : $"{archiveNameWithoutExtension}.part{splitCounter}{archiveExtension}")))
             using (var fileStreamOutput = new FileStream(outputHandle, FileAccess.ReadWrite))
@@ -149,14 +155,23 @@ class MainService
                         fileStreamOutput.SetLength(0);
                     }
 
-                    var isProcessed = !isDirectory || isDirectory && (LongDirectory.Exists(item.fullPath) ? LongDirectory.IsDirectoryEmpty(item.fullPath) : false);
+                    if (!isDirectory)
+                        using (var handleInput = LongFile.GetFileHandle(LongFile.GetWin32LongPath(inputFileName)))
+                        using (var inputFileStream = new FileStream(handleInput, FileAccess.Read))
+                        {
+                            f_length = inputFileStream.Length;
+                        }
+                    else f_length = 0;
+
+                    isProcessed = !isDirectory || isDirectory && (LongDirectory.Exists(item.fullPath) ? LongDirectory.IsDirectoryEmpty(item.fullPath) : false);
 
                     if (!isProcessed)
                     {
                         stepNumber++;
+                        globalPos += f_length;
 
                         // Report progress level to UI.
-                        long currentProgress = stepNumber * 100 / numberOfSteps;
+                        long currentProgress = globalPos * 100 / HelperService.uncompressedFilesSize;
                         progress((int)currentProgress);
 
                         // Report current time to UI.
@@ -175,18 +190,11 @@ class MainService
                     isSparse = (attr & FileAttributes.SparseFile) == FileAttributes.SparseFile;
                     isNormal = attr == FileAttributes.Normal;
 
-                    if (!isDirectory)
-                        using (var handleInput = LongFile.GetFileHandle(LongFile.GetWin32LongPath(inputFileName)))
-                        using (var inputFileStream = new FileStream(handleInput, FileAccess.Read))
-                        {
-                            inputFileLength = inputFileStream.Length;
-                        }
-
                     // nhc_settings
                     isCompressed = compressionLevel != CompressionLevel.NoCompression;
                     isLZMA = (compressionLevel == CompressionLevel.Optimal) &&
                              (HelperService.forceLZMA || (lzmaCompressionExtensionList.Contains(extension) &&
-                             (inputFileLength < lzmaCompressionFileSizeLimit)));
+                             (f_length < lzmaCompressionFileSizeLimit)));
                     isKeyBased = (cryptionAlgorithm == HelperService.CryptionAlgorithm.NeedleCryptKey) ||
                                  (cryptionAlgorithm == HelperService.CryptionAlgorithm.RC2Key) ||
                                  (cryptionAlgorithm == HelperService.CryptionAlgorithm.TripleDesKey) ||
@@ -232,7 +240,7 @@ class MainService
                         using (var inputHandle = LongFile.GetFileHandle(LongFile.GetWin32LongPath(inputFileName)))
                         using (var fileStreamInput = new FileStream(inputHandle, FileAccess.Read))
                         {
-                            long f_length = fileStreamInput.Length;
+                            f_length = fileStreamInput.Length;
 
                             // Creating header_file_size.
                             header_file_size = BitConverter.GetBytes(f_length);
@@ -505,6 +513,7 @@ class MainService
                                         {
                                             // Recalculate index position.
                                             pos += blockSize;
+                                            globalPos += blockSize;
 
                                             nextIV = (!isCompressed || (fourBlocksCounter < 4))
                                             ? HelperService.GetByteArraySegment(
@@ -519,8 +528,7 @@ class MainService
                                                 new byte[1] { fourBlocksCompressionTypeByte });
 
                                             // Report progress level to UI.
-                                            long currentProgress =
-                                                (stepNumber * 100 / numberOfSteps + (pos * 100 / f_length / numberOfSteps));
+                                            long currentProgress = globalPos * 100 / HelperService.uncompressedFilesSize;
                                             progress((int)currentProgress);
 
                                             // Report current time to UI.
@@ -529,8 +537,8 @@ class MainService
                                         else // if (isLastBlock)
                                         {
                                             // Recalculate index position.
+                                            globalPos += f_length - pos;
                                             pos = fileStreamInput.Position;
-
                                             splitPos = 0;
 
                                             // Don't delete these three lines below. They are not redunant. Resetting counter for the next file in queue.
@@ -591,7 +599,7 @@ class MainService
                                             }
 
                                             // Report progress level to UI.
-                                            long currentProgress = (stepNumber + 1) * 100 / numberOfSteps;
+                                            long currentProgress = globalPos * 100 / HelperService.uncompressedFilesSize;
                                             progress((int)currentProgress);
 
                                             // Report current time to UI.
@@ -625,7 +633,7 @@ class MainService
                                 splitBlockCounter++;
 
                                 // Report progress level to UI.
-                                long currentProgress = ((stepNumber + 1) * 100 / numberOfSteps);
+                                long currentProgress = globalPos * 100 / HelperService.uncompressedFilesSize;
                                 progress((int)currentProgress);
 
                                 // Report current time to UI.
@@ -718,7 +726,7 @@ class MainService
                         splitPos = 0;
                         splitBlockCounter++;
 
-                        long currentProgress = ((stepNumber + 1) * 100 / numberOfSteps);
+                        long currentProgress = globalPos * 100 / HelperService.uncompressedFilesSize;
                         progress((int)currentProgress);
 
                         // Report current time to UI.
@@ -727,8 +735,6 @@ class MainService
 
                     if (HelperService.backgroundWorkerClosePending)
                         break;
-
-                    numberOfEntriesProcessed(++nrOfEntriesProcessed);
 
                 }
                 catch (Exception excptn)
@@ -740,6 +746,9 @@ class MainService
             if (splitPos == 0)
             {
                 stepNumber++;
+                
+                if (isProcessed)
+                    numberOfEntriesProcessed(++HelperService.numberOfEntriesProcessed);
             }
         }
 
@@ -774,14 +783,16 @@ class MainService
     internal static void DecompressDecryptArchive(
         string outputDirectoryName,
         string archiveFileName,
-        ArrayList itemsToBeExtracted,
-        bool extractAll,
+        string[] itemsToBeExtracted,
+        string[] itemsToBeExtractedCorrespondingArchive,
+        bool? extractAll,
         byte[] key,
         byte[] keyArray,
         byte[] IV,
         string passPhrase,
         HelperService.CryptionAlgorithm cryptionAlgorithm,
         HelperService.OverwriteFilesSetting overwriteFilesSetting,
+        bool isUpdate,
         Crypt.ProgressDelegate progress,
         Crypt.CurrentFileProcessedDelegate currentFileProcessed,
         Crypt.NumberOfEntriesProcessedDelegate numberOfEntriesProcessed,
@@ -790,7 +801,8 @@ class MainService
         Crypt.CurrentDateTimeDelegate currentDateTime
         )
     {
-        if (itemsToBeExtracted.Count == 0 && !extractAll)
+        if (itemsToBeExtracted.Length == 0 ||
+            itemsToBeExtractedCorrespondingArchive.Length > 0 && !itemsToBeExtractedCorrespondingArchive.Contains(archiveFileName))
         {
             return;
         }
@@ -814,22 +826,21 @@ class MainService
         byte[] keyHash = needleCryptParams.Item1;
         byte[] combinedHash = needleCryptParams.Item2;
         byte[] nextIV = (byte[])IV.Clone();
-        int nrOfEntriesProcessed = 0;
         int splitArchiveCount = 0;
         var archiveExtension = Path.GetExtension(archiveFileName);
         var archiveNameWithoutExtension = LongDirectory.Combine(Path.GetDirectoryName(archiveFileName), Path.GetFileNameWithoutExtension(archiveFileName));
-        string archFileName = (string)archiveFileName.Clone();
-        var processedFilesNames = new List<string>();
-        int confirmation = 0;
+        var archFileName = (string)archiveFileName.Clone();
+        var currentArchiveEntriesProcessed = new List<string>();
+        int confirmation = -1;
         long files_length = HelperService.compressedFilesSize + HelperService.compressedHeadersSize;
-
+        bool isProcessingSplitAlreadyStarted = false;
 
         while (!isSplitArchive || isSplitArchive && LongFile.Exists(LongFile.GetWin32LongPath(archFileName)))
         {
             bool isDirectory, isHidden, isReadOnly, isSystem, isArchive, isTemporary, isSparse, isNormal;
             bool isCompressed, isLZMA, isKeyBased, isRC2, isTripleDES, isAES, isCompressedHeader;
             long compressedfilesize = 0, filesize, f_length;
-            string filename, output_filename;
+            string filename, output_filename = "";
             bool decompressCurrentFile = false;
             int nrOfCurrentEntriesProcessed = 0;
             bool isProcessingSplit = false;
@@ -1012,11 +1023,40 @@ class MainService
                         Path.Combine(outputDirectoryName, filename) :
                         Path.Combine(outputDirectoryName, LongDirectory.GetDirectoryName(filename));
 
+                    var startIndex = Array.IndexOf(itemsToBeExtractedCorrespondingArchive, archiveFileName);
+                    var endIndex = Array.LastIndexOf(itemsToBeExtractedCorrespondingArchive, archiveFileName);
+                    var itemToBeExtractedIndex = Array.IndexOf(itemsToBeExtracted, filename, startIndex, endIndex - startIndex + 1);
+                    var extractCurrentFile = itemToBeExtractedIndex == -1
+                                ? false
+                                : itemsToBeExtractedCorrespondingArchive[itemToBeExtractedIndex] == archiveFileName;
+                    
                     if (!LongDirectory.Exists(currentOutputDirectoryName))
                     {
-                        if (extractAll || itemsToBeExtracted.Contains(filename))
+                        if (extractCurrentFile)
                         {
-                            LongDirectory.CreateDirectory(currentOutputDirectoryName);
+                            var thisNrOfDirectories = 0;
+                            var tmpDirectoryName = outputDirectoryName;
+                            var tmpIndex = 0;
+                            var tmpArray = outputDirectoryName == currentOutputDirectoryName ? new string[0] : currentOutputDirectoryName.Substring(outputDirectoryName.Length + 1).Split('\\');
+
+                            while (tmpIndex <= tmpArray.Length)
+                            {
+                                if (!LongDirectory.Exists(tmpDirectoryName))
+                                {
+                                    LongDirectory.CreateDirectory(tmpDirectoryName);
+                                }
+                                if (!HelperService.entriesProcessed.ContainsKey(tmpDirectoryName))
+                                {
+                                    HelperService.entriesProcessed.Add(tmpDirectoryName, archiveFileName);
+                                    thisNrOfDirectories++;
+                                }
+                                if (tmpIndex < tmpArray.Length)
+                                    tmpDirectoryName = Path.Combine(tmpDirectoryName, tmpArray[tmpIndex]);
+                                tmpIndex++;
+                            }
+
+                            nrOfCurrentEntriesProcessed += thisNrOfDirectories;
+                            HelperService.numberOfEntriesProcessed += thisNrOfDirectories;
 
                             if (isDirectory)
                             {
@@ -1043,62 +1083,95 @@ class MainService
                     if (!isDirectory) // isFile
                     {
                         output_filename = Path.Combine(currentOutputDirectoryName, Path.GetFileName(filename));
+                        
+                        isProcessingSplit = isSplitArchive && currentArchiveEntriesProcessed.Contains(output_filename);
 
-                        isProcessingSplit = isSplitArchive && processedFilesNames.Contains(output_filename);
-
-                        if (extractAll || itemsToBeExtracted.Contains(filename))
+                        if (extractCurrentFile)
                         {
                             if (LongFile.Exists(output_filename))
                             {
-                                if (!isProcessingSplit)
+                                if (!isProcessingSplitAlreadyStarted)
                                 {
-                                    if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.Ask && confirmation != 3 && confirmation != 2) // !YesToAll and !NoToAll
+                                    if (isUpdate && HelperService.entriesProcessed.ContainsKey(output_filename) && !currentArchiveEntriesProcessed.Contains(output_filename))
                                     {
-                                        Crypt.InputBoxForm inputBoxForm = new Crypt.InputBoxForm("Warning", "The file " + output_filename + " already exists. Do you want to overwrite it?", HelperService.ConfirmationButtons.YesToAllYesNoNoToAll);
-                                        inputBoxForm.ShowDialog();
+                                        var confirm = MessageBox.Show($"The file {output_filename.Substring(outputDirectoryName.Length + 1)} has been already imported from {HelperService.entriesProcessed[output_filename]}. Do you want to overwrite it with the version found in {archiveFileName} instead?", "Warning", MessageBoxButtons.YesNoCancel);
 
-                                        confirmation = inputBoxForm.Result;
-
-                                        if (confirmation == 1 || confirmation == 3) // Yes or YesToAll
+                                        if (confirm == DialogResult.Yes)
                                         {
-                                            if (confirmation == 3) // YesToAll
-                                                overwriteFilesSetting = HelperService.OverwriteFilesSetting.Yes;
-
-                                            processedFilesNames.Add(output_filename);
-                                            isProcessingSplit = true;
+                                            HelperService.selectedPaths.Remove(HelperService.selectedPaths.ToArray().First(p => ((dynamic)p).fullPath == output_filename));
+                                            HelperService.entriesProcessed.Remove(output_filename); // it will be added back at the end of the 'while' loop with the correct value
+                                            HelperService.numberOfEntriesProcessed--;
                                             currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
                                             decompressCurrentFile = true;
                                         }
-                                        else
+                                        else if (confirm == DialogResult.No)
                                         {
-                                            if (confirmation == 2) // NoToAll
-                                                overwriteFilesSetting = HelperService.OverwriteFilesSetting.No;
-
                                             decompressCurrentFile = false;
                                         }
+                                        else // if Cancel
+                                        {
+                                            decompressCurrentFile = false;
+                                            isSplitArchive = false; // this will make sure we exit all loops
+                                            HelperService.backgroundWorkerClosePending = true;
+                                        }
                                     }
-                                    else if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.Yes)
+                                    else
                                     {
-                                        processedFilesNames.Add(output_filename);
-                                        isProcessingSplit = true;
-                                        currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
-                                        decompressCurrentFile = true;
-                                    }
-                                    else if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.No)
-                                    {
-                                        decompressCurrentFile = false;
+                                        if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.Ask && confirmation != 3 && confirmation != 2) // !YesToAll and !NoToAll 
+                                        {
+                                            Crypt.InputBoxForm inputBoxForm = new Crypt.InputBoxForm("Warning", "The file " + output_filename + " already exists. Do you want to overwrite it?", HelperService.ConfirmationButtons.YesToAllYesNoNoToAll);
+                                            inputBoxForm.ShowDialog();
+
+                                            confirmation = inputBoxForm.Result;
+                                            isProcessingSplitAlreadyStarted = true;
+
+                                            if (confirmation == 1 || confirmation == 3) // Yes or YesToAll
+                                            {
+                                                if (confirmation == 3) // YesToAll
+                                                    overwriteFilesSetting = HelperService.OverwriteFilesSetting.Yes;
+
+                                                if (HelperService.entriesProcessed.ContainsKey(output_filename))
+                                                {
+                                                    HelperService.numberOfEntriesProcessed--;
+                                                    HelperService.entriesProcessed.Remove(output_filename); // it will be added back at the end of the 'while' loop with the correct value
+                                                }
+                                                currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
+                                                decompressCurrentFile = true;
+                                            }
+                                            else
+                                            {
+                                                if (confirmation == 2) // NoToAll
+                                                    overwriteFilesSetting = HelperService.OverwriteFilesSetting.No;
+
+                                                decompressCurrentFile = false;
+                                            }
+                                        }
+                                        else if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.Yes || isProcessingSplitAlreadyStarted && confirmation == 1)
+                                        {
+                                            if (HelperService.entriesProcessed.ContainsKey(output_filename))
+                                            {
+                                                HelperService.numberOfEntriesProcessed--;
+                                                HelperService.entriesProcessed.Remove(output_filename); // it will be added back at the end of the 'while' loop with the correct value
+                                            }
+                                            isProcessingSplitAlreadyStarted = true;
+                                            currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
+                                            decompressCurrentFile = true;
+                                        }
+                                        else if (overwriteFilesSetting == HelperService.OverwriteFilesSetting.No || isProcessingSplitAlreadyStarted && confirmation == 0)
+                                        {
+                                            decompressCurrentFile = false;
+                                        }
                                     }
                                 }
                                 else
                                 {
                                     currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
-                                    decompressCurrentFile = true;
+                                    decompressCurrentFile = confirmation == -1 || confirmation == 1 || confirmation == 3;
                                 }
                             }
                             else
                             {
-                                processedFilesNames.Add(output_filename);
-                                isProcessingSplit = true;
+                                isProcessingSplitAlreadyStarted = true;
                                 currentFileProcessed("Processing file " + Path.GetFileName(filename) + "...");
                                 decompressCurrentFile = true;
                             }
@@ -1110,9 +1183,14 @@ class MainService
                             using (var outputFileHandle = LongFile.CreateFileForAppend(LongFile.GetWin32LongPath(output_filename)))
                             using (var fileStreamOutput = new FileStream(outputFileHandle, FileAccess.ReadWrite))
                             {
+                                if (!isProcessingSplit)
+                                {
+                                    fileStreamOutput.SetLength(0);
+                                }
+
                                 // Decompressing and decrypting data.
-                                fileStreamOutput.Position = isProcessingSplit ? fileStreamOutput.Length : 0;
-                                long file_pos = isSplitArchive && isProcessingSplit ? splitGlobalPos : 0; // Entry file uncompressed position index.
+                                fileStreamOutput.Position = isProcessingSplitAlreadyStarted ? fileStreamOutput.Length : 0;
+                                long file_pos = isSplitArchive && isProcessingSplitAlreadyStarted ? splitGlobalPos : 0; // Entry file uncompressed position index.
                                 byte[] compressed_buffer_size_bytes = new byte[2];
                                 int compressed_buffer_size = 0;
                                 byte[] blockCompressionTypeArr = new byte[1];
@@ -1207,14 +1285,14 @@ class MainService
                                                     ? fileStreamInput.Position == f_length - 1 || fileStreamInput.Position - splitArchivePos >= compressedfilesize - 1
                                                     : filesize - file_pos <= 0;
 
-                                                if (!isLastBlock && fourBlocksCounter == 4 || isLastBlock)
+                                                if (fourBlocksCounter == 4 || isLastBlock)
                                                 {
                                                     // Read isUncompressed block flag
                                                     fileStreamInput.Read(blockCompressionTypeArr, 0, 1);
 
                                                     isBlockCompressedArr = HelperService.ConvertByteToBoolArray(blockCompressionTypeArr[0]);
 
-                                                    globalpos += 1;
+                                                    globalpos++;
 
                                                     if (isBlockCompressedArr[0] == false && isBlockCompressedArr[1] == false)
                                                     {
@@ -1406,7 +1484,7 @@ class MainService
                                             {
                                                 // Report progress to UI.
 
-                                                long currentProgress = (stepNumber * 100 / numberOfSteps) + (globalpos * 100 / files_length / numberOfSteps);
+                                                long currentProgress = (HelperService.totalGlobalPos + globalpos) * 100 / files_length;
 
                                                 progress((int)currentProgress);
 
@@ -1423,7 +1501,7 @@ class MainService
                                             {
                                                 // Report progress to UI.
 
-                                                long currentProgress = (stepNumber * 100 / numberOfSteps) + (globalpos * 100 / files_length / numberOfSteps);
+                                                long currentProgress = (HelperService.totalGlobalPos + globalpos) * 100 / files_length;
 
                                                 progress((int)currentProgress);
 
@@ -1457,13 +1535,19 @@ class MainService
                                 {
                                     // Report progress to UI.
 
-                                    long currentProgress = (stepNumber * 100 / numberOfSteps) + (globalpos * 100 / files_length / numberOfSteps);
+                                    long currentProgress = (HelperService.totalGlobalPos + globalpos) * 100 / files_length;
 
                                     progress((int)currentProgress);
 
 
                                     // Report current time to UI.
                                     currentDateTime(DateTime.Now);
+                                }
+                                
+                                if (filesize == fileStreamOutput.Length)
+                                {
+                                    isProcessingSplitAlreadyStarted = false;
+                                    confirmation = confirmation == 0 || confirmation == 1 ? -1 : confirmation;
                                 }
                             }
 
@@ -1508,13 +1592,14 @@ class MainService
                                 archFileName = $"{archiveNameWithoutExtension}.part{splitArchiveCount}{archiveExtension}";
                                 splitGlobalPos = globalpos;
                             }
+                            else { isProcessingSplitAlreadyStarted = false; }
                         }
 
                         // Recalculate global index position of input file (i.e. .NHC archive).
                         splitArchivePos += compressedfilesize;
                     }
-
-                    if (isDirectory || !extractAll && !itemsToBeExtracted.Contains(filename) || filesize == 0)
+                    
+                    if (isDirectory || !extractCurrentFile || !decompressCurrentFile || filesize == 0)
                     {
                         fileStreamInput.Position = isSplitArchive 
                             ? splitArchivePos > IV.Length ? splitArchivePos - IV.Length : 0
@@ -1538,16 +1623,18 @@ class MainService
                         break;
 
                     // Report number of files extracted so far to UI.
-                    if (extractAll || itemsToBeExtracted.Contains(filename))
+                    if (extractCurrentFile && decompressCurrentFile && (isSplitArchive ? !currentArchiveEntriesProcessed.Contains(output_filename) : true))
                     {
-                        numberOfEntriesProcessed(++nrOfEntriesProcessed);
+                        currentArchiveEntriesProcessed.Add(output_filename);
+                        numberOfEntriesProcessed(++HelperService.numberOfEntriesProcessed);
                         nrOfCurrentEntriesProcessed++;
+                        HelperService.entriesProcessed.Add(output_filename, archiveFileName);
                     }
                     else
                     {
                         // Report progress to UI.
 
-                        long currentProgress = (stepNumber * 100 / numberOfSteps) + (globalpos * 100 / files_length / numberOfSteps);
+                        long currentProgress = (HelperService.totalGlobalPos + globalpos) * 100 / files_length;
 
                         progress((int)currentProgress);
 
@@ -1564,8 +1651,9 @@ class MainService
             }
         }
 
-        long crrntProgress = (stepNumber + 1) * 100 / numberOfSteps;
+        long crrntProgress = (HelperService.totalGlobalPos + globalpos) * 100 / files_length;
         progress((int)crrntProgress);
+        HelperService.totalGlobalPos += globalpos;
     }
 }
 

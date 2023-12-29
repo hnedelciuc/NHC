@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2022 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Main window / main menu.
 /********************************************************************************************************************/
@@ -37,24 +37,21 @@ namespace Crypt
 
         ContextMenu menuTreeView = new ContextMenu();
         MenuItem menuTreeViewItem1 = new MenuItem("Info Regarding Selected Entries");
-        MenuItem menuTreeViewItem2 = new MenuItem("Decompress && Decrypt Selected Entries Only");
         MenuItem menuTreeViewItem3 = new MenuItem("Update Archive Contents");
-        MenuItem menuTreeViewItem4 = new MenuItem("Add .NHC Archive to Current Archive");
+        MenuItem menuTreeViewItem4 = new MenuItem("Add .NHC Archive to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
         //MenuItem menuTreeViewItem5 = new MenuItem("Add Files && Folders to Current Node"); // TO DO
         ContextMenu menuCompressEncryptExtra = new ContextMenu();
         MenuItem menuCompressEncryptExtraItem1 = new MenuItem("Info Regarding Selected Entries");
-        MenuItem menuCompressEncryptExtraItem2 = new MenuItem("Decompress && Decrypt Selected Entries Only");
+        MenuItem menuCompressEncryptExtraItem3 = new MenuItem("Update Archive Contents");
         ContextMenu menuUpdateArchive1 = new ContextMenu();
-        MenuItem menuUpdateArchive1Item1 = new MenuItem("Update Archive Contents");
-        MenuItem menuUpdateArchive1Item2 = new MenuItem("Add .NHC Archive to Current Archive");
+        MenuItem menuUpdateArchive1Item1 = new MenuItem("Add .NHC Archive to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
         //MenuItem menuUpdateArchive1Item3 = new MenuItem("Add Files && Folders to Current Node"); // TO DO
-        ContextMenu menuUpdateArchive2 = new ContextMenu();
-        MenuItem menuUpdateArchive2Item1 = new MenuItem("Update Archive Contents");
         TreeNode clickedNode = null;
         string prevComboBoxSplitArchiveSizeText = string.Empty;
 
         /********************************************************************************************************************/
 
+        // Show info regarding files
         private void menuTreeViewItem1_Click(object sender, EventArgs e)
         {
             ProcessingForm frmProcessing = new ProcessingForm(HelperService.ProcessingTask.InfoRegardingSelectedEntries, clickedNode, treeView1);
@@ -63,30 +60,22 @@ namespace Crypt
 
         /********************************************************************************************************************/
 
-        private void menuTreeViewItem2_Click(object sender, EventArgs e)
-        {
-            ProcessingForm frmProcessing = new ProcessingForm(HelperService.ProcessingTask.DecompressDecryptOnlySelectedItems, treeView1);
-            frmProcessing.ShowDialog();
-
-            sender = new { extractSelectedEntriesOnly = true };
-
-            btnCompressEncrypt_Click(sender, e);
-        }
-
-        /********************************************************************************************************************/
-
+        // Update archive contents
         private void menuTreeViewItem3_Click(object sender, EventArgs e)
         {
             ProcessingForm frmProcessing = new ProcessingForm(HelperService.ProcessingTask.UpdateArchiveContents, treeView1);
             frmProcessing.ShowDialog();
 
-            ArrayList selectedPaths = new ArrayList();
+            var selectedPaths = new string[HelperService.selectedPaths.Count];
+            var selectedPathsCorrespondingArchive = new string[selectedPaths.Length];
 
             try
             {
-                foreach (dynamic pathObj in HelperService.selectedPaths)
+                for (var i = 0; i < HelperService.selectedPaths.Count; i++)
                 {
-                    selectedPaths.Add(pathObj.relativePath);
+                    dynamic pathObj = HelperService.selectedPaths[i];
+                    selectedPaths[i] = pathObj.relativePath;
+                    selectedPathsCorrespondingArchive[i] = pathObj.currentArchiveName;
                 }
             }
             catch { }
@@ -149,12 +138,12 @@ namespace Crypt
                         }
                     }
 
-                    ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Update, HelperService.cryptionAlgorithm, HelperService.importedPaths, selectedPaths, (bool)frmProcessing.extractAll, overwriteFilesSetting, outputFileName, keyFileName, checkBoxIsSplitArchive.Checked ? (long)splitArchiveSize : 0, password);
+                    ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Update, HelperService.cryptionAlgorithm, HelperService.importedPaths, selectedPaths, selectedPathsCorrespondingArchive, frmProcessing.extractAll, overwriteFilesSetting, HelperService.compressionLevel, outputFileName, keyFileName, checkBoxIsSplitArchive.Checked ? (long)splitArchiveSize : 0, password);
                     frmProgress.ShowDialog();
 
                     HelperService.importedPaths.Clear();
 
-                    HelperService.importedPaths.Add(new { alreadyOpened = false, relativePath = Path.GetFileName(outputFileName), fullPath = LongFile.GetWin32LongPath(outputFileName), isDirectory = false, keyFilePath = HelperService.keyFileName, password = HelperService.pwd, cryptionAlgorithm = HelperService.cryptionAlgorithm });
+                    HelperService.importedPaths.Add(new { alreadyOpened = false, relativePath = Path.GetFileName(outputFileName), fullPath = LongFile.GetWin32LongPath(outputFileName), isDirectory = false, keyFilePath = HelperService.keyFileName, password = HelperService.pwd, HelperService.cryptionAlgorithm });
 
                     HelperService.exitOnClose = false;
 
@@ -199,9 +188,9 @@ namespace Crypt
 
         /********************************************************************************************************************/
 
-        private void menuCompressEncryptExtraItem2_Click(object sender, EventArgs e)
+        private void menuCompressEncryptExtraItem3_Click(object sender, EventArgs e)
         {
-            menuTreeViewItem2_Click(sender, e);
+            menuTreeViewItem3_Click(sender, e);
         }
 
         /********************************************************************************************************************/
@@ -448,10 +437,6 @@ namespace Crypt
                 if (e.Node.Checked)
                 {
                     HelperService.CheckAllNodes(e.Node.Nodes, true);
-                }
-                else
-                {
-                    HelperService.CheckAllNodes(e.Node.Nodes, false);
                 }
                 addAfterCheckEvent();
             }
@@ -728,14 +713,11 @@ namespace Crypt
             SetCompressEncryptButtonSetting();
 
             HelperService.cryptionSetting = HelperService.CryptionOptions.Encrypt;
-            menuTreeViewItem2.Visible = false;
             menuTreeViewItem3.Visible = false;
             menuTreeViewItem4.Visible = false;
-            menuCompressEncryptExtraItem2.Visible = false;
+            menuCompressEncryptExtraItem3.Visible = false;
             btnUpdateArchive1.Visible = false;
             btnUpdateArchive1.Text = string.Empty;
-            btnUpdateArchive2.Visible = false;
-            btnUpdateArchive2.Text = string.Empty;
             radioButtonGenerateNewKey.Enabled = true;
             groupBoxOverwriteFiles.Enabled = false;
             groupBoxChooseCompressionLevel.Enabled = true;
@@ -759,14 +741,11 @@ namespace Crypt
             SetCompressEncryptButtonSetting();
 
             HelperService.cryptionSetting = HelperService.CryptionOptions.Decrypt;
-            menuTreeViewItem2.Visible = true;
             menuTreeViewItem3.Visible = true;
             menuTreeViewItem4.Visible = true;
-            menuCompressEncryptExtraItem2.Visible = true;
+            menuCompressEncryptExtraItem3.Visible = true;
             btnUpdateArchive1.Visible = true;
             btnUpdateArchive1.Text = "▼";
-            btnUpdateArchive2.Visible = true;
-            btnUpdateArchive2.Text = "▼";
             
             //if (radioButtonGenerateNewKey.Checked == true)
             //{
@@ -786,6 +765,10 @@ namespace Crypt
             {
                 HelperService.importedPaths = new ArrayList();
                 HelperService.output = null;
+                HelperService.compressedFilesSize = 0;
+                HelperService.compressedHeadersSize = 0;
+                HelperService.uncompressedFilesSize = 0;
+                HelperService.archiveFileSize = 0;
             }
             treeView1.SelectedNodes = new ArrayList();
             treeView1.Nodes.Clear();
@@ -968,6 +951,9 @@ namespace Crypt
             else
             if (radioButtonDecompressDecrypt.Checked == true)
             {
+                ProcessingForm frmProcessing = new ProcessingForm(HelperService.ProcessingTask.DecompressDecryptSelectedItemsOnly, treeView1);
+                frmProcessing.ShowDialog();
+
                 string password = String.Empty;
                 string keyFileName = String.Empty;
                 string outputFileName = String.Empty;
@@ -975,18 +961,16 @@ namespace Crypt
 
                 // If the file names are not an empty string, call corresponding methods for processing.
 
-                ArrayList selectedPaths = new ArrayList();
-                bool extractSelectedEntriesOnly = false;
+                var selectedPaths = new string[HelperService.selectedPaths.Count];
+                var selectedPathsCorrespondingArchive = new string[selectedPaths.Length];
 
                 try
                 {
-                    extractSelectedEntriesOnly = ((dynamic)sender).extractSelectedEntriesOnly;
-                    if (extractSelectedEntriesOnly)
+                    for (var i = 0; i < HelperService.selectedPaths.Count; i++)
                     {
-                        foreach (dynamic pathObj in HelperService.selectedPaths)
-                        {
-                            selectedPaths.Add(pathObj.relativePath);
-                        }
+                        dynamic pathObj = HelperService.selectedPaths[i];
+                        selectedPaths[i] = pathObj.relativePath;
+                        selectedPathsCorrespondingArchive[i] = pathObj.currentArchiveName;
                     }
                 }
                 catch { }
@@ -1024,7 +1008,7 @@ namespace Crypt
                             overwriteFilesSetting = HelperService.OverwriteFilesSetting.No;
                         }
 
-                        ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Decrypt, HelperService.cryptionAlgorithm, HelperService.importedPaths, selectedPaths, !extractSelectedEntriesOnly, overwriteFilesSetting, outputFileName, keyFileName, 0, password);
+                        ProgressForm frmProgress = new ProgressForm(HelperService.CryptionOptions.Decrypt, HelperService.cryptionAlgorithm, HelperService.importedPaths, selectedPaths, selectedPathsCorrespondingArchive, true, overwriteFilesSetting, HelperService.compressionLevel, outputFileName, keyFileName, 0, password);
 
                         frmProgress.ShowDialog();
                     }
@@ -1043,7 +1027,7 @@ namespace Crypt
         {
             menuCompressEncryptExtra = new ContextMenu(); // fix for menu item length stretch when switching between encrypt / decrypt
             menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem1);
-            menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem2);
+            menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem3);
 
             menuCompressEncryptExtra.Show(btnCompressEncryptExtra, new Point(-HelperService.FindLongestLengthOfElementText(menuCompressEncryptExtra.MenuItems) * 6 * HelperService.scaling / 100, btnCompressEncryptExtra.Size.Height));
         }
@@ -1057,13 +1041,6 @@ namespace Crypt
 
         /********************************************************************************************************************/
         
-        private void btnUpdateArchive2_Click(object sender, EventArgs e)
-        {
-            menuUpdateArchive2.Show(btnUpdateArchive2, new Point(-HelperService.FindLongestLengthOfElementText(menuUpdateArchive2.MenuItems) * 6 * HelperService.scaling / 100, btnUpdateArchive2.Size.Height));
-        }
-
-        /********************************************************************************************************************/
-
         private void btnShortcut_Click(object sender, EventArgs e)
         {
             InputBoxForm inputBoxForm = new InputBoxForm("NHC Shortcut Generator", "Choose option:", HelperService.ConfirmationButtons.ShortcutGeneratorButtons);
@@ -1095,7 +1072,8 @@ namespace Crypt
 
         private void btnAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Needle in a Haystack in a Crypt v1.0 (ENG)\r\n\r\nCopyright © 2016-2022 by Horia Nedelciuc", "About NHC", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Needle in a Haystack in a Crypt v1.0 (ENG)\r\n\r\nCopyright © 2016-2023 by Horia Nedelciuc\r\n\r\nThis is a file archiver that can compress and encrypt files and folders in NHC format. You can find the source code here:\r\n\r\nhttps://github.com/hnedelciuc/NHC\r\n\r\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:\r\n\r\nhttp://www.apache.org/licenses/LICENSE-2.0\r\n\r\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+                "About NHC", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /********************************************************************************************************************/
@@ -1322,12 +1300,9 @@ namespace Crypt
         private bool isManualCompressEncryptCheckChanged;
         private void SetCryptionSettings()
         {
-            menuTreeViewItem2.Visible = false;
             menuTreeViewItem3.Visible = false;
             menuTreeViewItem4.Visible = false;
-            menuCompressEncryptExtraItem2.Visible = false;
             btnUpdateArchive1.Visible = false;
-            btnUpdateArchive2.Visible = false;
 
             isManualCompressEncryptCheckChanged = false;
 
@@ -1531,30 +1506,23 @@ namespace Crypt
             comboBoxChooseCryptionAlgorithm.Items.Add(new Item(HelperService.cryptionAlgorithmDict[HelperService.CryptionAlgorithm.AesPassword], 7));
 
             menuTreeView.MenuItems.Add(menuTreeViewItem1);
-            menuTreeView.MenuItems.Add(menuTreeViewItem2);
             menuTreeView.MenuItems.Add(menuTreeViewItem3);
             menuTreeView.MenuItems.Add(menuTreeViewItem4);
             //menuTreeView.MenuItems.Add(menuTreeViewItem5);
             menuTreeViewItem1.Click += new EventHandler(menuTreeViewItem1_Click);
-            menuTreeViewItem2.Click += new EventHandler(menuTreeViewItem2_Click);
             menuTreeViewItem3.Click += new EventHandler(menuTreeViewItem3_Click);
             menuTreeViewItem4.Click += new EventHandler(menuTreeViewItem4_Click);
             //menuTreeViewItem5.Click += new EventHandler(menuTreeViewItem5_Click);
 
             menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem1);
-            menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem2);
+            menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem3);
             menuCompressEncryptExtraItem1.Click += new EventHandler(menuCompressEncryptExtraItem1_Click);
-            menuCompressEncryptExtraItem2.Click += new EventHandler(menuCompressEncryptExtraItem2_Click);
+            menuCompressEncryptExtraItem3.Click += new EventHandler(menuCompressEncryptExtraItem3_Click);
 
             menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item1);
-            menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item2);
             //menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item3);
-            menuUpdateArchive1Item1.Click += new EventHandler(menuUpdateArchive1Item1_Click);
-            menuUpdateArchive1Item2.Click += new EventHandler(menuUpdateArchive1Item2_Click);
+            menuUpdateArchive1Item1.Click += new EventHandler(menuUpdateArchive1Item2_Click);
             //menuUpdateArchive1Item3.Click += new EventHandler(menuUpdateArchive1Item3_Click);
-
-            menuUpdateArchive2.MenuItems.Add(menuUpdateArchive2Item1);
-            menuUpdateArchive2Item1.Click += new EventHandler(menuUpdateArchive2Item1_Click);
 
             HelperService.exitOnClose = true;
         }

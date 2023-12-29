@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2020 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Helper Service.
 / Different helper methods used by other services.
@@ -23,6 +23,7 @@ using System.Security.Principal;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using Crypt;
+using GracefulDynamicDictionary;
 
 internal class HelperService
 {
@@ -89,7 +90,7 @@ internal class HelperService
         ImportFilesDirectories_treeView1_DragDrop,
         ImportFilesDirectories_LoadInputFiles,
         InfoRegardingSelectedEntries,
-        DecompressDecryptOnlySelectedItems,
+        DecompressDecryptSelectedItemsOnly,
         UpdateArchiveContents
     }
     internal static Dictionary<string, Image> imageListDict = new Dictionary<string, Image>()
@@ -119,7 +120,10 @@ internal class HelperService
     internal static long compressedFilesSize = 0;
     internal static long uncompressedFilesSize = 0;
     internal static long compressedHeadersSize = 0;
+    internal static long totalGlobalPos = 0;
     internal static long splitCount = 0;
+    internal static long numberOfEntriesProcessed = 0;
+    internal static Dictionary<string, string> entriesProcessed = new Dictionary<string, string>(); // debug
     internal static int scaling { get; set; }
     internal static bool backgroundWorkerClosePending;
     internal static bool exitOnClose = false;
@@ -213,6 +217,7 @@ internal class HelperService
                         using (var stream = new FileStream(handle, FileAccess.Read))
                         {
                             var uncompressedFileSize = stream.Length;
+                            uncompressedFilesSize += uncompressedFileSize;
 
                             object pathObj = new { relativePath, fullPath = file, isDirectory = false, uncompressedFileSize };
                             if (!importedPaths.Contains(pathObj))
@@ -408,41 +413,39 @@ internal class HelperService
         {
             var pathArray = LongDirectory.TrimPath(remainingPath).Split('\\');
             var currentPath = LongDirectory.TrimPath(previousPath + "\\" + pathArray[0]);
-            int remainingIndex = 0;
-            remainingIndex = remainingPath.IndexOf("\\");
+            int remainingIndex = remainingPath.IndexOf("\\");
             remainingPath = remainingIndex != -1 ? remainingPath.Substring(remainingIndex + 1) : String.Empty;
             if (node.Nodes.ContainsKey(currentPath))
             {
                 if (!isDirectory && remainingPath == String.Empty)
                 {
                     var imageIndex = pathArray.Length > 1 ? 2 : isDirectory ? 2 : 1;
-                    dynamic tag = node.Nodes[node.Nodes.IndexOfKey(currentPath)].Tag;
-                    
+                    dynamic tag = (DDict)node.Nodes[node.Nodes.IndexOfKey(currentPath)].Tag;
+
                     long? cmprssdFullFileSize = null;
                     int? cmprssdFullHeaderSize = null;
 
-                    try
-                    {
-                        cmprssdFullFileSize = tag.compressedFullFileSize;
-                        cmprssdFullHeaderSize = tag.compressedFullHeaderSize;
-                    }
-                    catch { }
-
+                    // node.Tag is DDict, it won't throw exception if value not found
+                    cmprssdFullFileSize = tag.compressedFullFileSize;
+                    cmprssdFullHeaderSize = tag.compressedFullHeaderSize;
+                  
                     cmprssdFullFileSize = cmprssdFullFileSize == null ? (long)tag.compressedFileSize + compressedFileSize : (long)cmprssdFullFileSize + compressedFileSize;
                     cmprssdFullHeaderSize = cmprssdFullHeaderSize == null ? (int)tag.compressedHeaderSize + compressedHeaderSize : (int)cmprssdFullHeaderSize + compressedHeaderSize;
 
                     if (tag.uncompressedFileSize != fileSize) { throw new Exception("tag.uncompressedFileSize != fileSize"); }
 
-                    node.Nodes[node.Nodes.IndexOfKey(currentPath)].Tag = new
+                    tag = new DDict(new Dictionary<string, dynamic>()
                     {
-                        compressedFileSize = imageIndex != 1 ? 0 : compressedFileSize,
-                        compressedFullFileSize = imageIndex != 1 ? 0 : (long)cmprssdFullFileSize,
-                        uncompressedFileSize = imageIndex != 1 ? 0 : fileSize,
-                        compressedHeaderSize = imageIndex == 1 || isDirectory ? compressedHeaderSize : 0,
-                        compressedFullHeaderSize = imageIndex == 1 || isDirectory ? (int)cmprssdFullHeaderSize : 0,
-                        relativePath = currentPath,
-                        isDirectory = imageIndex == 2
-                    };
+                        { "compressedFileSize", imageIndex != 1 ? 0 : compressedFileSize },
+                        { "compressedFullFileSize", imageIndex != 1 ? 0 : (long)cmprssdFullFileSize },
+                        { "uncompressedFileSize", imageIndex != 1 ? 0 : fileSize },
+                        { "compressedHeaderSize", imageIndex == 1 || isDirectory ? compressedHeaderSize : 0 },
+                        { "compressedFullHeaderSize", imageIndex == 1 || isDirectory ? (int)cmprssdFullHeaderSize : 0 },
+                        { "relativePath", currentPath },
+                        { "isDirectory", imageIndex == 2 }
+                    });
+
+                    node.Nodes[node.Nodes.IndexOfKey(currentPath)].Tag = tag;
 
                     isSplitContinuation = true;
                 }
@@ -452,19 +455,21 @@ internal class HelperService
             {
                 var imageIndex = pathArray.Length > 1 ? 2 : isDirectory ? 2 : 1;
                 var selectedImageIndex = pathArray.Length > 1 ? 2 : isDirectory ? 2 : 1;
+                var tag = new DDict(new Dictionary<string, dynamic>()
+                {
+                    { "compressedFileSize", imageIndex != 1 ? 0 : compressedFileSize },
+                    { "uncompressedFileSize", imageIndex != 1 ? 0 : fileSize },
+                    { "compressedHeaderSize", imageIndex == 1 || isDirectory ? compressedHeaderSize : 0 },
+                    { "relativePath", currentPath },
+                    { "isDirectory", imageIndex == 2 }
+                });
+
                 node.Nodes.Add(new TreeNode(pathArray[0])
                 {
                     Name = currentPath,
                     ImageIndex = imageIndex,
                     SelectedImageIndex = selectedImageIndex,
-                    Tag = new
-                    {
-                        compressedFileSize = imageIndex != 1 ? 0 : compressedFileSize,
-                        uncompressedFileSize = imageIndex != 1 ? 0 : fileSize,
-                        compressedHeaderSize = imageIndex == 1 || isDirectory ? compressedHeaderSize : 0,
-                        relativePath = currentPath,
-                        isDirectory = imageIndex == 2
-                    }
+                    Tag = tag
                 });
                 AddNodePath(node.Nodes[node.Nodes.Count - 1], currentPath, remainingPath, fileSize, compressedFileSize, compressedHeaderSize, isDirectory, ref isSplitContinuation);
             }
@@ -1303,6 +1308,7 @@ internal class HelperService
         bool isEncrypt = (args.Count(arg => !arg.StartsWith("-") && !arg.ToLower().EndsWith(".nhc")) > 0) || (args.FirstOrDefault(arg => arg.ToLower() == "-encrypt") != null);
 
         var argFiles = new List<Tuple<string, long>>();
+        var uncompressedFileSize = 0L;
 
         // Reading command line arguments and updating settings
         foreach (string arg in args)
@@ -1346,13 +1352,16 @@ internal class HelperService
                     {
                         if (LongFile.Exists(arg))
                         {
-                            long uncompressedFileSize = 0;
+                            uncompressedFileSize = 0;
                             if (isEncrypt)
                             {
-                                var stream = LongFile.GetFileStream(arg);
-                                uncompressedFileSize = stream.Length;
-                                stream.Close();
-                                stream.Dispose();
+                                using (var handle = LongFile.GetFileHandleWithRead(arg))
+                                using (var stream = new FileStream(handle, FileAccess.Read))
+                                {
+                                    uncompressedFileSize = stream.Length;
+                                }
+
+                                uncompressedFilesSize += uncompressedFileSize;
                             }
                             argFiles.Add(new Tuple<string, long>(arg, uncompressedFileSize));
                         }
@@ -1360,10 +1369,13 @@ internal class HelperService
                     break;
             }
         }
+        
+        uncompressedFileSize = 0;
 
         foreach (var file in argFiles)
         {
-            if (isEncrypt) argPaths.Add(new { relativePath = Path.GetFileName(file.Item1), fullPath = LongFile.GetWin32LongPath(file.Item1), isDirectory = false, uncompressedFileSize = file.Item2 });
+            uncompressedFileSize = file.Item2;
+            if (isEncrypt) argPaths.Add(new { relativePath = Path.GetFileName(file.Item1), fullPath = LongFile.GetWin32LongPath(file.Item1), isDirectory = false, uncompressedFileSize });
             else argPaths.Add(new { relativePath = Path.GetFileName(file.Item1), fullPath = LongFile.GetWin32LongPath(file.Item1), isDirectory = false, keyFilePath = keyFileName, password = pwd, cryptionAlgorithm });
         }
 
@@ -1388,6 +1400,14 @@ internal class HelperService
                 {
                     OpenArchiveForm openArchiveForm = new OpenArchiveForm(importedPath, updatedImportedPaths);
                     openArchiveForm.ShowDialog();
+
+                    if (openArchiveForm.error)
+                    {
+                        importedPaths.Clear();
+                        argPaths.Clear();
+                        return;
+                    }
+
                     updatedImportedPaths = openArchiveForm.updatedImportedPaths;
                 }
 
@@ -1420,7 +1440,15 @@ internal class HelperService
                     continue;
                 }
                 OpenArchiveForm openArchiveForm = new OpenArchiveForm(importedPath, updatedImportedPaths);
+
+                if (openArchiveForm.error)
+                {
+                    importedPaths.Clear();
+                    updatedImportedPaths.Clear();
+                    return;
+                }
                 openArchiveForm.ShowDialog();
+
                 updatedImportedPaths = openArchiveForm.updatedImportedPaths;
             }
 

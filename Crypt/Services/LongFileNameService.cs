@@ -287,6 +287,14 @@ internal static class LongFile
         return hfile;
     }
 
+    internal static SafeFileHandle GetFileHandleWithRead(string filename)
+    {
+        var longFilename = GetWin32LongPath(filename);
+        SafeFileHandle hfile = NativeMethods.CreateFile(longFilename, (int)NativeMethods.FILE_GENERIC_READ, NativeMethods.FILE_SHARE_READ, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
+        if (hfile.IsInvalid) ThrowWin32Exception($"Cannot get file handle for read: '{longFilename}'");
+        return hfile;
+    }
+
     internal static System.IO.FileStream GetFileStream(string filename, FileAccess access = FileAccess.Read)
     {
         var longFilename = GetWin32LongPath(filename);

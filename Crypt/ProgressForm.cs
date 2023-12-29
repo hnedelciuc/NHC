@@ -1,6 +1,6 @@
 ﻿//********************************************************************************************************************//
 // Needle in a Haystack in a Crypt v1.0.
-// Copyright (C) 2016-2022 by Horia Nedelciuc from Chisinau, Moldova.
+// Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 //********************************************************************************************************************//
 // Progress bar / result window.
 //********************************************************************************************************************//
@@ -35,14 +35,16 @@ namespace Crypt
 
         /********************************************************************************************************************/
 
-        internal ProgressForm(HelperService.CryptionOptions cryptionOptions, HelperService.CryptionAlgorithm cryptionAlgorithm, ArrayList items, ArrayList itemsToBeExtracted, bool extractAll, HelperService.OverwriteFilesSetting overwriteFilesSetting, string outputFileName, string keyFileName, long splitArchiveSize, string password = null)
+        internal ProgressForm(HelperService.CryptionOptions cryptionOptions, HelperService.CryptionAlgorithm cryptionAlgorithm, ArrayList items, string[] itemsToBeExtracted, string[] itemsToBeExtractedCorrespondingArchive, bool? extractAll, HelperService.OverwriteFilesSetting overwriteFilesSetting, CompressionLevel compressionLevel, string outputFileName, string keyFileName, long splitArchiveSize, string password = null)
         {
             InitializeComponent();
             SetWindowColor();
             this.cryptionOptions = cryptionOptions;
             this.cryptionAlgorithm = cryptionAlgorithm;
+            this.compressionLevel = compressionLevel;
             this.items = items;
             this.itemsToBeExtracted = itemsToBeExtracted;
+            this.itemsToBeExtractedCorrespondingArchive = itemsToBeExtractedCorrespondingArchive;
             this.extractAll = extractAll;
             this.overwriteFilesSetting = overwriteFilesSetting;
             this.outputFileName = outputFileName;
@@ -57,8 +59,9 @@ namespace Crypt
         private HelperService.CryptionOptions cryptionOptions;
         private HelperService.CryptionAlgorithm cryptionAlgorithm;
         private ArrayList items;
-        private ArrayList itemsToBeExtracted;
-        private bool extractAll;
+        private string[] itemsToBeExtracted;
+        private string[] itemsToBeExtractedCorrespondingArchive;
+        private bool? extractAll;
         private HelperService.OverwriteFilesSetting overwriteFilesSetting;
         private string outputFileName;
         private string keyFileName;
@@ -78,7 +81,7 @@ namespace Crypt
         private bool compressEncryptSuccess = false;
         private int decryptCount = 0;
         private string currentFileProcessed = String.Empty;
-        private int numberOfEntriesProcessed = 0;
+        private long numberOfEntriesProcessed = 0;
         private DateTime startDateTime;
         private DateTime currentDateTime;
         private string password;
@@ -196,6 +199,7 @@ namespace Crypt
                 case HelperService.CryptionOptions.Decrypt:
                     {
                         startDateTime = DateTime.Now;
+                        HelperService.totalGlobalPos = 0;
 
                         try
                         {
@@ -223,6 +227,7 @@ namespace Crypt
                                             outputFileName,
                                             inputFileName,
                                             itemsToBeExtracted,
+                                            itemsToBeExtractedCorrespondingArchive,
                                             extractAll,
                                             keyByte,
                                             keyArray,
@@ -230,9 +235,10 @@ namespace Crypt
                                             (string)item.password,
                                             (HelperService.CryptionAlgorithm)item.cryptionAlgorithm,
                                             overwriteFilesSetting,
+                                            false,
                                             (current) => worker.ReportProgress(current),
                                             (current) => currentFileProcessed = current,
-                                            (nr) => ++numberOfEntriesProcessed,
+                                            (nr) => numberOfEntriesProcessed = nr,
                                             items.Count,
                                             i,
                                             (current) => currentDateTime = current
@@ -243,8 +249,6 @@ namespace Crypt
 
                                     decryptCount++;
                                 }
-
-                                HelperService.selectedPaths = new ArrayList();
 
                                 worker.ReportProgress(100);
                             }
@@ -293,12 +297,18 @@ namespace Crypt
                             Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed + " entries have been extracted.";
                         }
 
+                        HelperService.selectedPaths.Clear();
+                        HelperService.entriesProcessed.Clear();
+                        HelperService.numberOfEntriesProcessed = 0;
+                        numberOfEntriesProcessed = 0;
+
                         break;
                     }
 
                 case HelperService.CryptionOptions.Update:
                     {
                         startDateTime = DateTime.Now;
+                        HelperService.totalGlobalPos = 0;
 
                         try
                         {
@@ -328,6 +338,7 @@ namespace Crypt
                                             tempDirectory,
                                             inputFileName,
                                             itemsToBeExtracted,
+                                            itemsToBeExtractedCorrespondingArchive,
                                             extractAll,
                                             keyByte,
                                             keyArray,
@@ -335,9 +346,10 @@ namespace Crypt
                                             (string)item.password,
                                             (HelperService.CryptionAlgorithm)item.cryptionAlgorithm,
                                             overwriteFilesSetting,
+                                            true,
                                             (current) => worker.ReportProgress(current / 2),
                                             (current) => currentFileProcessed = current,
-                                            (nr) => ++numberOfEntriesProcessed,
+                                            (nr) =>  numberOfEntriesProcessed = nr - 1, // -1 because the temp folder is counted too, but we don't need to reflect that here
                                             items.Count,
                                             i,
                                             (current) => currentDateTime = current
@@ -351,6 +363,7 @@ namespace Crypt
                             }
 
                             numberOfEntriesProcessed = 0;
+                            HelperService.numberOfEntriesProcessed = 0;
 
                             if (LongFile.Exists(outputFileName))
                             {
@@ -384,7 +397,7 @@ namespace Crypt
                                 splitArchiveSize,
                                 (current) => worker.ReportProgress(50 + (current / 2)),
                                 (current) => currentFileProcessed = current,
-                                (nr) => ++numberOfEntriesProcessed,
+                                (nr) => numberOfEntriesProcessed = nr,
                                 (current) => currentDateTime = current
                                 );
 
@@ -406,8 +419,6 @@ namespace Crypt
                         }
                         finally
                         {
-                            HelperService.selectedPaths.Clear();
-
                             try { LongDirectory.Delete(tempDirectory, true); } catch { }
 
                             workerIsDone = true;
@@ -428,6 +439,11 @@ namespace Crypt
                             Environment.NewLine + Environment.NewLine + resultMessage +
                             Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed + " entries have been added.";
                         }
+
+                        HelperService.selectedPaths.Clear();
+                        HelperService.entriesProcessed.Clear();
+                        HelperService.numberOfEntriesProcessed = 0;
+                        numberOfEntriesProcessed = 0;
 
                         break;
                     }

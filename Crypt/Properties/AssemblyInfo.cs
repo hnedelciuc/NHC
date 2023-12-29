@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2022 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / AssemblyInfo.
 /********************************************************************************************************************/
@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Needle in a Haystack in a Crypt")]
-[assembly: AssemblyCopyright("Copyright ©  2016-2022 Horia Nedelciuc")]
+[assembly: AssemblyCopyright("Copyright ©  2016-2023 Horia Nedelciuc")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

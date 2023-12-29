@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2022 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Open archive window.
 /********************************************************************************************************************/
@@ -23,6 +23,7 @@ namespace Crypt
     {
         dynamic importedPath;
         internal ArrayList updatedImportedPaths;
+        internal bool error = false;
 
         /********************************************************************************************************************/
 
@@ -36,13 +37,32 @@ namespace Crypt
             HelperService.scaling = GetDisplayScaleFactor();
             AdjustDisplayScaling();
             SetWindowColor();
-
-            DetectArchiveService.DetectArchive(importedPath.fullPath);
+            
+            try
+            {
+                DetectArchiveService.DetectArchive(importedPath.fullPath);
+            }
+            catch (Exception ex)
+            { 
+                this.error = true;
+                MessageBox.Show($"Could not open archive. {ex.Message}", "Error", MessageBoxButtons.OK);
+                return;
+            }
+            
+            toolTip.SetToolTip(btnBrowseKeyFile, "Browse Key");
+            toolTip.SetToolTip(btnShowPassword, "Show");
+            maskedTxtBox.UseSystemPasswordChar = true;
+            lblAlgorithmName.Text = HelperService.cryptionAlgorithmDict[HelperService.cryptionAlgorithm].Replace("&", "&&");
+            txtBoxKeyFile.Text = HelperService.IsKeyBasedCryptionAlgorithm() ? importedPath.keyFilePath : string.Empty;
+            maskedTxtBox.Text = HelperService.IsPasswordBasedCryptionAlgorithm() ? importedPath.password : string.Empty;
+            Text = Text + " - " + System.IO.Path.GetFileName(importedPath.fullPath);
 
             switch (HelperService.cryptionAlgorithm)
             {
                 case HelperService.CryptionAlgorithm.NeedleCryptKey:
                     txtBoxKeyFile.Enabled = true;
+                    txtBoxKeyFile.Select();
+                    txtBoxKeyFile.Select(0, txtBoxKeyFile.Text.Length);
                     btnBrowseKeyFile.Enabled = true;
                     maskedTxtBox.Enabled = false;
                     btnShowPassword.Enabled = false;
@@ -51,10 +71,14 @@ namespace Crypt
                     txtBoxKeyFile.Enabled = true;
                     btnBrowseKeyFile.Enabled = true;
                     maskedTxtBox.Enabled = true;
+                    maskedTxtBox.Select();
+                    maskedTxtBox.Select(0, maskedTxtBox.Text.Length);
                     btnShowPassword.Enabled = true;
                     break;
                 case HelperService.CryptionAlgorithm.RC2Key:
                     txtBoxKeyFile.Enabled = true;
+                    txtBoxKeyFile.Select();
+                    txtBoxKeyFile.Select(0, txtBoxKeyFile.Text.Length);
                     btnBrowseKeyFile.Enabled = true;
                     maskedTxtBox.Enabled = false;
                     btnShowPassword.Enabled = false;
@@ -65,10 +89,14 @@ namespace Crypt
                     txtBoxKeyFile.Enabled = false;
                     btnBrowseKeyFile.Enabled = false;
                     maskedTxtBox.Enabled = true;
+                    maskedTxtBox.Select();
+                    maskedTxtBox.Select(0, maskedTxtBox.Text.Length);
                     btnShowPassword.Enabled = true;
                     break;
                 case HelperService.CryptionAlgorithm.TripleDesKey:
                     txtBoxKeyFile.Enabled = true;
+                    txtBoxKeyFile.Select();
+                    txtBoxKeyFile.Select(0, txtBoxKeyFile.Text.Length);
                     btnBrowseKeyFile.Enabled = true;
                     maskedTxtBox.Enabled = false;
                     btnShowPassword.Enabled = false;
@@ -79,10 +107,14 @@ namespace Crypt
                     txtBoxKeyFile.Enabled = false;
                     btnBrowseKeyFile.Enabled = false;
                     maskedTxtBox.Enabled = true;
+                    maskedTxtBox.Select();
+                    maskedTxtBox.Select(0, maskedTxtBox.Text.Length);
                     btnShowPassword.Enabled = true;
                     break;
                 case HelperService.CryptionAlgorithm.AesKey:
                     txtBoxKeyFile.Enabled = true;
+                    txtBoxKeyFile.Select();
+                    txtBoxKeyFile.Select(0, txtBoxKeyFile.Text.Length);
                     btnBrowseKeyFile.Enabled = true;
                     maskedTxtBox.Enabled = false;
                     btnShowPassword.Enabled = false;
@@ -93,17 +125,12 @@ namespace Crypt
                     txtBoxKeyFile.Enabled = false;
                     btnBrowseKeyFile.Enabled = false;
                     maskedTxtBox.Enabled = true;
+                    maskedTxtBox.Select();
+                    maskedTxtBox.Select(0, maskedTxtBox.Text.Length);
                     btnShowPassword.Enabled = true;
                     break;
+                default: return;
             }
-
-            toolTip.SetToolTip(btnBrowseKeyFile, "Browse Key");
-            toolTip.SetToolTip(btnShowPassword, "Show");
-            maskedTxtBox.UseSystemPasswordChar = true;
-            lblAlgorithmName.Text = HelperService.cryptionAlgorithmDict[HelperService.cryptionAlgorithm].Replace("&", "&&");
-            txtBoxKeyFile.Text = HelperService.IsKeyBasedCryptionAlgorithm() ? importedPath.keyFilePath : string.Empty;
-            maskedTxtBox.Text = HelperService.IsPasswordBasedCryptionAlgorithm() ? importedPath.password : string.Empty;
-            Text = Text + " - " + System.IO.Path.GetFileName(importedPath.fullPath);
         }
 
         /********************************************************************************************************************/
@@ -128,7 +155,7 @@ namespace Crypt
                 default: password = HelperService.pwd;
                     break;
             }
-            this.updatedImportedPaths.Add(new { alreadyOpened = true, fullPath = importedPath.fullPath, relativePath = importedPath.relativePath, keyFilePath = HelperService.keyFileName, password, cryptionAlgorithm = HelperService.cryptionAlgorithm });
+            this.updatedImportedPaths.Add(new { alreadyOpened = true, importedPath.fullPath, importedPath.relativePath, keyFilePath = HelperService.keyFileName, password, HelperService.cryptionAlgorithm });
             isDiscard = false;
             Close();
         }
@@ -206,6 +233,14 @@ namespace Crypt
         private void maskedTxtBox_TextChanged(object sender, EventArgs e)
         {
             HelperService.pwd = maskedTxtBox.Text;
+        }
+
+        private void maskedTxtBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnOpen_Click(sender, e);
+            }
         }
 
         /********************************************************************************************************************/

@@ -74,6 +74,7 @@
             this.maskedTxtBox.Size = new System.Drawing.Size(300, 20);
             this.maskedTxtBox.TabIndex = 6;
             this.maskedTxtBox.TextChanged += new System.EventHandler(this.maskedTxtBox_TextChanged);
+            this.maskedTxtBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.maskedTxtBox_KeyUp);
             // 
             // btnShowPassword
             // 

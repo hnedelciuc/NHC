@@ -1,6 +1,6 @@
 ﻿//********************************************************************************************************************//
 // Needle in a Haystack in a Crypt v1.0.
-// Copyright (C) 2016-2022 by Horia Nedelciuc from Chisinau, Moldova.
+// Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 //********************************************************************************************************************//
 // Processing bar window.
 //********************************************************************************************************************//
@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Crypt
@@ -138,7 +139,7 @@ namespace Crypt
                 case HelperService.ProcessingTask.ImportFilesDirectories_treeView1_DragDrop:
                 case HelperService.ProcessingTask.ImportFilesDirectories_LoadInputFiles: labelOutput.Text = "Importing Files && Directories..."; break;
                 case HelperService.ProcessingTask.InfoRegardingSelectedEntries: labelOutput.Text = "Retrieving Info Regarding Selected Entries..."; break;
-                case HelperService.ProcessingTask.DecompressDecryptOnlySelectedItems: labelOutput.Text = "Preparing for decompression && decryption..."; break;
+                case HelperService.ProcessingTask.DecompressDecryptSelectedItemsOnly: labelOutput.Text = "Preparing for decompression && decryption..."; break;
                 case HelperService.ProcessingTask.UpdateArchiveContents: labelOutput.Text = "Updating Archive Contents..."; break;
             }
         }
@@ -151,14 +152,18 @@ namespace Crypt
             {
                 case HelperService.ProcessingTask.OpenArchive:
                     {
-                        int nrOfFilesExtracted = 0;
+                        long nrOfFilesProcessed = 0;
 
                         worker.ReportProgress(0);
 
                         startDateTime = DateTime.Now;
-                        nrOfFilesExtracted = 0;
+                        nrOfFilesProcessed = 0;
 
                         HelperService.rootNodes = new TreeNode[paths.Count];
+                        HelperService.compressedFilesSize = 0;
+                        HelperService.compressedHeadersSize = 0;
+                        HelperService.archiveFileSize = 0;
+                        HelperService.uncompressedFilesSize = 0;
 
                         try
                         {
@@ -171,7 +176,7 @@ namespace Crypt
                                 CryptionService.LoadKey(item.keyFilePath, out key, out IV, item.cryptionAlgorithm, item.password);
 
                                 HelperService.rootNodes[i] = OpenArchiveService.OpenArchive(i, paths.Count, inputFileName, (HelperService.CryptionAlgorithm)item.cryptionAlgorithm, (string)item.password, key, keyArray, IV,
-                                    (current) => worker.ReportProgress(current), (current) => currentFileProcessed = current, (nr) => nrOfFilesExtracted = nr, (current) => currentDateTime = current);
+                                    (current) => worker.ReportProgress(current), (current) => currentFileProcessed = current, (nr) => nrOfFilesProcessed += nr, (current) => currentDateTime = current);
                                 decryptCount++;
                             }
 
@@ -187,24 +192,28 @@ namespace Crypt
 
                         if (decryptCount != paths.Count)
                         {
+                            var s = paths.Count > 1 ? "s" : "";
+
                             if (decryptCount > 0)
                             {
                                 // Displays the Success Message.
                                 resultMessage = "Partial Success / Partial Fail" + Environment.NewLine + Environment.NewLine +
-                                    decryptCount + " crypted files have been decompressed && decrypted successfully, while " +
+                                    decryptCount + " crypted files have been opened successfully, while " +
                                     (paths.Count - decryptCount) + " have failed, and the failure occured at " +
                                     inputFileName + " file." + Environment.NewLine + Environment.NewLine +
                                     resultMessage + Environment.NewLine + Environment.NewLine +
-                                    nrOfFilesExtracted + " files have been extracted.";
+                                    nrOfFilesProcessed + $" files from inside the archive{s} have been processed.";
                             }
                             else
                             {
                                 resultMessage = "Fail" + Environment.NewLine + Environment.NewLine +
-                                    "Decompressing && decrypting files has stopped." +
+                                    $"Crypted file{s} could not be opened." +
                                 Environment.NewLine + Environment.NewLine + resultMessage +
-                                Environment.NewLine + Environment.NewLine + nrOfFilesExtracted + " files have been extracted.";
+                                Environment.NewLine + Environment.NewLine + nrOfFilesProcessed + $" files from inside the archive{s} have been processed.";
 
                             }
+
+                            HelperService.importedPaths.RemoveAt(HelperService.importedPaths.Count - 1);
                         }
 
                         break;
@@ -212,6 +221,8 @@ namespace Crypt
 
                 case HelperService.ProcessingTask.ImportFilesDirectories_btnBrowseInput_Click:
                     {
+                        var errors = 0;
+
                         try
                         {
                             HelperService.backgroundWorkerClosePending = false;
@@ -229,6 +240,7 @@ namespace Crypt
                                     {
                                         var stream = LongFile.GetFileStream(node.Name);
                                         var uncompressedFileSize = stream.Length;
+                                        HelperService.uncompressedFilesSize += uncompressedFileSize;
                                         stream.Close();
                                         stream.Dispose();
                                         treeView1.Nodes.Add(new TreeNode(node.Text) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { relativePath = node.Text } });
@@ -245,13 +257,20 @@ namespace Crypt
 
                             treeView1.EndUpdate();
                         }
-                        catch { }
+                        catch { errors++; }
+
+                        if (errors > 0)
+                        {
+                            MessageBox.Show($"There were {errors} errors when importing. Some files or folders may have not been imported.");
+                        }
 
                         break;
                     }
 
                 case HelperService.ProcessingTask.ImportFilesDirectories_treeView1_DragDrop:
                     {
+                        var errors = 0;
+
                         try
                         {
                             HelperService.backgroundWorkerClosePending = false;
@@ -270,10 +289,13 @@ namespace Crypt
                                     long uncompressedFileSize = 0;
                                     if (LongFile.Exists(path))
                                     {
-                                        var stream = LongFile.GetFileStream(path);
-                                        uncompressedFileSize = stream.Length;
-                                        stream.Close();
-                                        stream.Dispose();
+                                        using (var handle = LongFile.GetFileHandleWithRead(path))
+                                        using (var stream = new FileStream(handle, FileAccess.Read))
+                                        {
+                                            uncompressedFileSize = stream.Length;
+                                        }
+
+                                        HelperService.uncompressedFilesSize += uncompressedFileSize;
                                     }
                                     var pathObj = new { relativePath = filename, fullPath = path, isDirectory = false, uncompressedFileSize };
                                     if (!HelperService.importedPaths.Contains(pathObj))
@@ -292,13 +314,20 @@ namespace Crypt
 
                             treeView1.EndUpdate();
                         }
-                        catch { }
+                        catch { errors++; }
+
+                        if (errors > 0)
+                        {
+                            MessageBox.Show($"There were {errors} errors when importing. Some files or folders may have not been imported.");
+                        }
 
                         break;
                     }
 
                 case HelperService.ProcessingTask.ImportFilesDirectories_LoadInputFiles:
                     {
+                        var errors = 0;
+
                         try
                         {
                             HelperService.backgroundWorkerClosePending = false;
@@ -311,7 +340,22 @@ namespace Crypt
                                     HelperService.ListDirectory(treeView1, path.fullPath);
                                 else
                                 {
-                                    treeView1.Nodes.Add(new TreeNode(path.relativePath) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { path.relativePath } });
+                                    long uncompressedFileSize = 0;
+
+                                    using (var handle = LongFile.GetFileHandleWithRead(path))
+                                    using (var stream = new FileStream(handle, FileAccess.Read))
+                                    {
+                                        uncompressedFileSize = stream.Length;
+                                    }
+
+                                    HelperService.uncompressedFilesSize += uncompressedFileSize;
+
+                                    var pathObj = new { path.relativePath, path.fullPath, isDirectory = false, uncompressedFileSize };
+                                    if (!HelperService.importedPaths.Contains(pathObj))
+                                    {
+                                        treeView1.Nodes.Add(new TreeNode(path.relativePath) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { path.relativePath } });
+                                        HelperService.importedPaths.Add(pathObj);
+                                    }
                                 }
                             }
                             if (!HelperService.backgroundWorkerClosePending)
@@ -322,7 +366,12 @@ namespace Crypt
 
                             treeView1.EndUpdate();
                         }
-                        catch { }
+                        catch { errors++; }
+
+                        if (errors > 0)
+                        {
+                            MessageBox.Show($"There were {errors} errors when importing. Some files or folders may have not been imported.");
+                        }
 
                         break;
                     }
@@ -340,11 +389,16 @@ namespace Crypt
 
                         selectedNodesCount = selectedNodes.Count;
 
+                        if (selectedNodesCount == 0)
+                            return;
+
+                        uncompressedFilesSize = 0;
+                        compressedFilesSize = 0;
+                        compressedHeadersSize = 0;
+                        selectedArchives = 0;
+
                         if (HelperService.cryptionSetting == HelperService.CryptionOptions.Encrypt)
                         {
-                            if (selectedNodesCount == 0)
-                                return;
-
                             foreach (dynamic path in HelperService.importedPaths)
                             {
                                 if (HelperService.backgroundWorkerClosePending)
@@ -371,32 +425,20 @@ namespace Crypt
                         }
                         else // decrypt
                         {
-                            if (selectedNodesCount == 0)
-                                return;
-
                             foreach (dynamic node in selectedNodes)
                             {
                                 if (HelperService.backgroundWorkerClosePending)
                                     break;
 
-                                long? cmprssdFileSize = null;
-                                long? cmprssdHeaderSize = null;
-                                long? cmprssdFullFileSize = null;
-                                long? cmprssdFullHeaderSize = null;
-                                long uncmprssdFileSize = 0;
-                                bool isArchiveRoot = false;
+                                // node.Tag is DDict, it won't throw exception if value not found
 
-                                try { cmprssdFileSize = ((dynamic)node.Tag)?.compressedFileSize; } catch { }
-                                try { cmprssdHeaderSize = ((dynamic)node.Tag)?.compressedHeaderSize; } catch { }
-                                try { cmprssdFullFileSize = ((dynamic)node.Tag)?.compressedFullFileSize; } catch { }
-                                try { cmprssdFullHeaderSize = ((dynamic)node.Tag)?.compressedFullHeaderSize; } catch { }
-                                try { uncmprssdFileSize = node.Tag?.uncompressedFileSize ?? 0; } catch { }
-                                try { isArchiveRoot = node.Tag?.isArchiveRoot ?? false; } catch { }
-
-                                uncompressedFilesSize += uncmprssdFileSize;
-                                compressedFilesSize += (long)(cmprssdFullFileSize ?? cmprssdFileSize ?? 0);
-                                compressedHeadersSize += (long)(cmprssdFullHeaderSize ?? cmprssdHeaderSize ?? 0);
-                                selectedArchives = isArchiveRoot ? selectedArchives + 1 : selectedArchives;
+                                uncompressedFilesSize += node.Tag?.uncompressedFileSize ?? 0;
+                                compressedFilesSize += (long)(((dynamic)node.Tag)?.compressedFullFileSize ?? ((dynamic)node.Tag)?.compressedFileSize ?? 0);
+                                compressedHeadersSize += (long)(((dynamic)node.Tag)?.compressedFullHeaderSize ?? ((dynamic)node.Tag)?.compressedHeaderSize ?? 0);
+                                
+                                bool isArchiveRoot = isArchiveRoot = node.Tag?.isArchiveRoot ?? false;
+                                
+                                if (isArchiveRoot) selectedArchives++;
                             }
                         }
 
@@ -405,10 +447,11 @@ namespace Crypt
                         break;
                     }
 
-                case HelperService.ProcessingTask.DecompressDecryptOnlySelectedItems:
+                case HelperService.ProcessingTask.DecompressDecryptSelectedItemsOnly:
                     {
                         ArrayList selectedNodes = new ArrayList();
                         HelperService.selectedPaths.Clear();
+                        HelperService.numberOfEntriesProcessed = 0;
 
                         if (treeView1.CheckBoxes)
                             HelperService.GetCheckedNodes(treeView1.Nodes, ref selectedNodes, true);
@@ -416,31 +459,33 @@ namespace Crypt
                             HelperService.GetSelectedNodes(treeView1.SelectedNodes, ref selectedNodes);
 
                         if (selectedNodes.Count == 0)
-                            return;
-
-                        try
+                            HelperService.SelectAllNodes(treeView1.Nodes, true, ref selectedNodes);
+                        
+                        foreach (TreeNode node in selectedNodes)
                         {
-                            foreach (TreeNode node in selectedNodes)
+                            if (HelperService.backgroundWorkerClosePending)
+                                break;
+
+                            var dynamicNode = (dynamic)node;
+                            var tmpNode = (dynamic)node;
+                            var isArchiveRoot = dynamicNode.Tag == null;
+                            var currentArchiveName = "";
+
+                            // node.Tag is DDict, it won't throw exception if value not found
+
+                            while (true)
                             {
-                                if (HelperService.backgroundWorkerClosePending)
+                                if (tmpNode.Tag.isArchiveRoot == true)
+                                {
+                                    currentArchiveName = tmpNode.Name;
                                     break;
-
-                                var dynamicNode = (dynamic)node;
-
-                                var isArchiveRoot = dynamicNode.Tag == null;
-                                
-                                if (!isArchiveRoot)
-                                    try
-                                    {
-                                        isArchiveRoot = dynamicNode.Tag.isArchiveRoot;
-                                    }
-                                    catch { }
-
-                                if (!isArchiveRoot)
-                                    HelperService.selectedPaths.Add(new { relativePath = dynamicNode.Tag.relativePath, fullPath = "", isDirectory = dynamicNode.Tag.isDirectory });
+                                }
+                                tmpNode = tmpNode.Parent;
                             }
+
+                            if (!isArchiveRoot && dynamicNode.Tag.relativePath != null && dynamicNode.Tag.isDirectory != null)
+                                HelperService.selectedPaths.Add(new { dynamicNode.Tag.relativePath, fullPath = "", dynamicNode.Tag.isDirectory, currentArchiveName });
                         }
-                        catch { }
 
                         HelperService.selectedPaths = new ArrayList(HelperService.selectedPaths.ToArray().Distinct().ToArray());
 
@@ -452,29 +497,30 @@ namespace Crypt
 
                 case HelperService.ProcessingTask.UpdateArchiveContents:
                     {
-                        ArrayList selectedNodes = new ArrayList();
+                        var selectedNodes = new ArrayList();
+                        var allNodes = new ArrayList();
+
                         HelperService.selectedPaths.Clear();
+                        HelperService.entriesProcessed.Clear();
+                        HelperService.numberOfEntriesProcessed = 0;
 
                         if (HelperService.selectionSetting == HelperService.SelectionSetting.Checkboxes)
                         {
-                            HelperService.GetCheckedNodes(treeView1.Nodes, ref selectedNodes);
+                            HelperService.GetCheckedNodes(treeView1.Nodes, ref selectedNodes, true);
                         }
-                        if (HelperService.selectionSetting == HelperService.SelectionSetting.Multiselect)
+                        else if (HelperService.selectionSetting == HelperService.SelectionSetting.Multiselect)
                         {
                             selectedNodes = treeView1.SelectedNodes;
                         }
 
-                        if (selectedNodes.Count == 0)
-                        {
-                            extractAll = true;
-                            HelperService.SelectAllNodes(treeView1.Nodes, true, ref selectedNodes);
-                        }
+                        HelperService.SelectAllNodes(treeView1.Nodes, true, ref allNodes);
 
                         if (selectedNodes.Count == 0)
                         {
+                            selectedNodes = allNodes;
                             extractAll = null;
-                            return;
                         }
+                        else if (selectedNodes.Count == allNodes.Count) extractAll = true;
                         else extractAll = false;
 
                         try
@@ -485,24 +531,41 @@ namespace Crypt
                                 tempDirectory = LongDirectory.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                             }
 
+                            var currentArchiveName = "";
+
                             foreach (TreeNode node in selectedNodes)
                             {
                                 if (HelperService.backgroundWorkerClosePending)
                                     break;
 
-                                var dynamicNode = (dynamic)node;
+                                // node.Tag is DDict, it won't throw exception if value not found
 
+                                var dynamicNode = (dynamic)node;
+                                var tmpNode = (dynamic)node;
                                 var isArchiveRoot = dynamicNode.Tag == null;
 
-                                if (!isArchiveRoot)
-                                    try
+                                if (extractAll == true)
+                                {
+                                    if (!isArchiveRoot)
                                     {
                                         isArchiveRoot = dynamicNode.Tag.isArchiveRoot;
+                                        currentArchiveName = dynamicNode.Name;
                                     }
-                                    catch { }
-
-                                if (!isArchiveRoot)
-                                    HelperService.selectedPaths.Add(new { relativePath = dynamicNode.Tag.relativePath, fullPath = LongDirectory.Combine(tempDirectory, dynamicNode.Tag.relativePath), isDirectory = dynamicNode.Tag.isDirectory });
+                                }
+                                else
+                                {
+                                    while (tmpNode != null)
+                                    {
+                                        if (tmpNode.Tag.isArchiveRoot == true)
+                                        {
+                                            currentArchiveName = tmpNode.Name;
+                                            break;
+                                        }
+                                        tmpNode = tmpNode.Parent;
+                                    }
+                                }
+                                if (!isArchiveRoot && dynamicNode.Tag.relativePath != null && dynamicNode.Tag.isDirectory != null)
+                                    HelperService.selectedPaths.Add(new { dynamicNode.Tag.relativePath, fullPath = LongDirectory.Combine(tempDirectory, dynamicNode.Tag.relativePath), dynamicNode.Tag.isDirectory, currentArchiveName });
                             }
                         }
                         catch { }

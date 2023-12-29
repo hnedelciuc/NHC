@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2020 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Application entry point.
 /********************************************************************************************************************/
@@ -53,7 +53,7 @@ namespace Crypt
 
     internal delegate void ProgressDelegate(int CurrentValue);
     internal delegate void CurrentFileProcessedDelegate(string currentFileProcessed);
-    internal delegate void NumberOfEntriesProcessedDelegate(int numberOfFilesExtracted);
+    internal delegate void NumberOfEntriesProcessedDelegate(long numberOfFilesExtracted);
     internal delegate void CurrentDateTimeDelegate(DateTime currentDateTime);
 }
 

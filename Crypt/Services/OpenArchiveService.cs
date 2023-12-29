@@ -1,13 +1,15 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v1.0.
-/ Copyright (C) 2016-2020 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Open Archive Service.
 /
 /********************************************************************************************************************/
 
+using GracefulDynamicDictionary;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -36,7 +38,7 @@ internal class OpenArchiveService
         byte[] IV,
         Crypt.ProgressDelegate progress, 
         Crypt.CurrentFileProcessedDelegate currentFileProcessed,
-        Crypt.NumberOfEntriesProcessedDelegate numberOfFilesExtracted, 
+        Crypt.NumberOfEntriesProcessedDelegate numberOfFilesProcessed, 
         Crypt.CurrentDateTimeDelegate currentDateTime)
     {
         TreeNode rootNode = new TreeNode(Path.GetFileName(archiveFileName)) { Name = archiveFileName, ImageIndex = 0, SelectedImageIndex = 0 };
@@ -70,10 +72,10 @@ internal class OpenArchiveService
         byte[] keyHash = needleCryptParams.Item1;
         byte[] combinedHash = needleCryptParams.Item2;
 
-        HelperService.archiveFileSize = 0;
-        HelperService.compressedFilesSize = 0;
-        HelperService.compressedHeadersSize = 0;
-        HelperService.uncompressedFilesSize = 0;
+        //HelperService.archiveFileSize = 0;
+        //HelperService.compressedFilesSize = 0;
+        //HelperService.compressedHeadersSize = 0;
+        //HelperService.uncompressedFilesSize = 0;
         var splitCount = 0;
         var archFileName = $"{archiveFileName}";
         var archiveExtension = Path.GetExtension(archiveFileName);
@@ -305,7 +307,7 @@ internal class OpenArchiveService
                     if (count % 10 == 0)
                     {
                         currentDateTime(currentDateTimeShow);
-                        numberOfFilesExtracted(count);
+                        numberOfFilesProcessed(count);
                         currentFileProcessed(currentFileProcessedShow);
                     }
 
@@ -328,22 +330,19 @@ internal class OpenArchiveService
             long? cmprssdFullFileSize = null;
             long? cmprssdFullHeaderSize = null;
 
-            try
-            {
-                cmprssdFullFileSize = ((dynamic)node.Tag).compressedFullFileSize;
-                cmprssdFullHeaderSize = ((dynamic)node.Tag).compressedFullHeaderSize;
-            }
-            catch { }
+            // node.Tag is DDict, it won't throw exception if value not found
+            cmprssdFullFileSize = (dynamic)node.Tag.compressedFullFileSize;
+            cmprssdFullHeaderSize = (dynamic)node.Tag.compressedFullHeaderSize;
 
             HelperService.compressedFilesSize += cmprssdFullFileSize ?? ((dynamic)node.Tag)?.compressedFileSize ?? 0;
         }
 
-        rootNode.Tag = new
+        rootNode.Tag = new DDict(new Dictionary<string, dynamic>()
         {
-            isArchiveRoot = true,
-            isSplitArchive,
-            splitCount
-        };
+            { "isArchiveRoot", true },
+            { "isSplitArchive", isSplitArchive},
+            { "splitCount", splitCount}
+        });
 
         HelperService.splitCount = splitCount;
 

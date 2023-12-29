@@ -76,7 +76,6 @@
             this.btnUpdateArchive1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.btnRemoveSelected = new System.Windows.Forms.Button();
-            this.btnUpdateArchive2 = new System.Windows.Forms.Button();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.btnCompressEncrypt = new System.Windows.Forms.Button();
             this.btnCompressEncryptExtra = new System.Windows.Forms.Button();
@@ -183,7 +182,7 @@
             this.groupBoxChooseCryptionKey.Controls.Add(this.radioButtonUseBuiltInDefault);
             this.groupBoxChooseCryptionKey.Location = new System.Drawing.Point(421, 379);
             this.groupBoxChooseCryptionKey.Name = "groupBoxChooseCryptionKey";
-            this.groupBoxChooseCryptionKey.Size = new System.Drawing.Size(220, 93);
+            this.groupBoxChooseCryptionKey.Size = new System.Drawing.Size(234, 93);
             this.groupBoxChooseCryptionKey.TabIndex = 0;
             this.groupBoxChooseCryptionKey.TabStop = false;
             this.groupBoxChooseCryptionKey.Text = "Choose Cryption Key";
@@ -309,7 +308,7 @@
             this.groupBoxChooseCryptionAlgorithm.Controls.Add(this.comboBoxChooseCryptionAlgorithm);
             this.groupBoxChooseCryptionAlgorithm.Location = new System.Drawing.Point(422, 314);
             this.groupBoxChooseCryptionAlgorithm.Name = "groupBoxChooseCryptionAlgorithm";
-            this.groupBoxChooseCryptionAlgorithm.Size = new System.Drawing.Size(219, 55);
+            this.groupBoxChooseCryptionAlgorithm.Size = new System.Drawing.Size(233, 55);
             this.groupBoxChooseCryptionAlgorithm.TabIndex = 1;
             this.groupBoxChooseCryptionAlgorithm.TabStop = false;
             this.groupBoxChooseCryptionAlgorithm.Text = "Choose Cryption Algorithm";
@@ -321,22 +320,22 @@
             this.comboBoxChooseCryptionAlgorithm.Location = new System.Drawing.Point(11, 18);
             this.comboBoxChooseCryptionAlgorithm.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxChooseCryptionAlgorithm.Name = "comboBoxChooseCryptionAlgorithm";
-            this.comboBoxChooseCryptionAlgorithm.Size = new System.Drawing.Size(197, 21);
+            this.comboBoxChooseCryptionAlgorithm.Size = new System.Drawing.Size(199, 21);
             this.comboBoxChooseCryptionAlgorithm.TabIndex = 0;
             this.comboBoxChooseCryptionAlgorithm.SelectedIndexChanged += new System.EventHandler(this.comboBoxChooseCryptionAlgorithm_SelectedIndexChanged);
             // 
             // tableLayoutPanel3
             // 
             this.tableLayoutPanel3.ColumnCount = 3;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.31876F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.3521F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.32914F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.47107F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.61345F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.19328F));
             this.tableLayoutPanel3.Controls.Add(this.checkBoxIsSplitArchive, 0, 2);
             this.tableLayoutPanel3.Controls.Add(this.comboBoxSplitArchiveSize, 2, 2);
             this.tableLayoutPanel3.Controls.Add(this.btnAbout, 0, 3);
             this.tableLayoutPanel3.Controls.Add(this.btnSettings, 1, 3);
             this.tableLayoutPanel3.Controls.Add(this.btnShortcut, 2, 3);
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(419, 317);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(417, 317);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 4;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 28.34008F));
@@ -345,18 +344,19 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(224, 245);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(238, 245);
             this.tableLayoutPanel3.TabIndex = 6;
             // 
             // checkBoxIsSplitArchive
             // 
             this.tableLayoutPanel3.SetColumnSpan(this.checkBoxIsSplitArchive, 2);
             this.checkBoxIsSplitArchive.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.checkBoxIsSplitArchive.Location = new System.Drawing.Point(3, 161);
+            this.checkBoxIsSplitArchive.Location = new System.Drawing.Point(7, 161);
+            this.checkBoxIsSplitArchive.Margin = new System.Windows.Forms.Padding(7, 3, 0, 3);
             this.checkBoxIsSplitArchive.Name = "checkBoxIsSplitArchive";
-            this.checkBoxIsSplitArchive.Size = new System.Drawing.Size(142, 30);
+            this.checkBoxIsSplitArchive.Size = new System.Drawing.Size(149, 30);
             this.checkBoxIsSplitArchive.TabIndex = 1;
-            this.checkBoxIsSplitArchive.Text = "Split Archive          Size:";
+            this.checkBoxIsSplitArchive.Text = "Split Archive            Size:";
             this.checkBoxIsSplitArchive.UseVisualStyleBackColor = true;
             // 
             // comboBoxSplitArchiveSize
@@ -374,9 +374,9 @@
             "10 MB",
             "1 MB",
             "500 KB"});
-            this.comboBoxSplitArchiveSize.Location = new System.Drawing.Point(151, 165);
+            this.comboBoxSplitArchiveSize.Location = new System.Drawing.Point(161, 165);
             this.comboBoxSplitArchiveSize.Name = "comboBoxSplitArchiveSize";
-            this.comboBoxSplitArchiveSize.Size = new System.Drawing.Size(70, 21);
+            this.comboBoxSplitArchiveSize.Size = new System.Drawing.Size(74, 21);
             this.comboBoxSplitArchiveSize.TabIndex = 2;
             this.comboBoxSplitArchiveSize.TextUpdate += new System.EventHandler(this.comboBoxSplitArchiveSize_TextUpdate);
             this.comboBoxSplitArchiveSize.DropDownClosed += new System.EventHandler(this.comboBoxSplitArchiveSize_DropDownClosed);
@@ -384,13 +384,14 @@
             // 
             // btnAbout
             // 
-            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAbout.Location = new System.Drawing.Point(2, 196);
             this.btnAbout.Margin = new System.Windows.Forms.Padding(2);
             this.btnAbout.Name = "btnAbout";
-            this.btnAbout.Size = new System.Drawing.Size(70, 47);
+            this.btnAbout.Size = new System.Drawing.Size(75, 47);
             this.btnAbout.TabIndex = 0;
             this.toolTip1.SetToolTip(this.btnAbout, "About NHC");
             this.btnAbout.UseVisualStyleBackColor = true;
@@ -398,13 +399,14 @@
             // 
             // btnSettings
             // 
-            this.btnSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSettings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSettings.Location = new System.Drawing.Point(76, 196);
+            this.btnSettings.Location = new System.Drawing.Point(81, 196);
             this.btnSettings.Margin = new System.Windows.Forms.Padding(2);
             this.btnSettings.Name = "btnSettings";
-            this.btnSettings.Size = new System.Drawing.Size(70, 47);
+            this.btnSettings.Size = new System.Drawing.Size(75, 47);
             this.btnSettings.TabIndex = 0;
             this.toolTip1.SetToolTip(this.btnSettings, "Settings");
             this.btnSettings.UseVisualStyleBackColor = true;
@@ -412,14 +414,13 @@
             // 
             // btnShortcut
             // 
-            this.btnShortcut.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnShortcut.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.btnShortcut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnShortcut.Location = new System.Drawing.Point(150, 196);
+            this.btnShortcut.Location = new System.Drawing.Point(160, 196);
             this.btnShortcut.Margin = new System.Windows.Forms.Padding(2);
             this.btnShortcut.Name = "btnShortcut";
-            this.btnShortcut.Size = new System.Drawing.Size(72, 47);
+            this.btnShortcut.Size = new System.Drawing.Size(75, 47);
             this.btnShortcut.TabIndex = 0;
             this.toolTip1.SetToolTip(this.btnShortcut, "Shortcut");
             this.btnShortcut.UseVisualStyleBackColor = true;
@@ -545,10 +546,10 @@
             this.panel1.Controls.Add(this.groupBoxChooseCompressionLevel);
             this.panel1.Controls.Add(this.tableLayoutPanel3);
             this.panel1.Controls.Add(this.tableLayoutPanel2);
-            this.panel1.Location = new System.Drawing.Point(14, 2);
+            this.panel1.Location = new System.Drawing.Point(9, 2);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(646, 565);
+            this.panel1.Size = new System.Drawing.Size(660, 565);
             this.panel1.TabIndex = 0;
             // 
             // treeView1
@@ -575,8 +576,8 @@
             // tableLayoutPanel2
             // 
             this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 46F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 46F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 49.16667F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.83333F));
             this.tableLayoutPanel2.Controls.Add(this.groupBoxChooseOperatingMode, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.tableLayoutPanel4, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.tableLayoutPanel5, 0, 2);
@@ -590,7 +591,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(226, 301);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(240, 301);
             this.tableLayoutPanel2.TabIndex = 7;
             // 
             // groupBoxChooseOperatingMode
@@ -602,7 +603,7 @@
             this.groupBoxChooseOperatingMode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 2);
             this.groupBoxChooseOperatingMode.Name = "groupBoxChooseOperatingMode";
             this.groupBoxChooseOperatingMode.Padding = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.groupBoxChooseOperatingMode.Size = new System.Drawing.Size(105, 97);
+            this.groupBoxChooseOperatingMode.Size = new System.Drawing.Size(110, 97);
             this.groupBoxChooseOperatingMode.TabIndex = 0;
             this.groupBoxChooseOperatingMode.TabStop = false;
             this.groupBoxChooseOperatingMode.Text = "Choose";
@@ -637,8 +638,8 @@
             // tableLayoutPanel4
             // 
             this.tableLayoutPanel4.ColumnCount = 2;
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 79.66102F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20.33898F));
             this.tableLayoutPanel4.Controls.Add(this.btnBrowseInput, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.btnUpdateArchive1, 1, 0);
             this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 101);
@@ -646,7 +647,7 @@
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 1;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(113, 94);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(118, 94);
             this.tableLayoutPanel4.TabIndex = 1;
             // 
             // btnBrowseInput
@@ -658,7 +659,7 @@
             this.btnBrowseInput.Image = global::Crypt.Properties.Resources.Plus__3D__small_2;
             this.btnBrowseInput.Location = new System.Drawing.Point(3, 3);
             this.btnBrowseInput.Name = "btnBrowseInput";
-            this.btnBrowseInput.Size = new System.Drawing.Size(84, 88);
+            this.btnBrowseInput.Size = new System.Drawing.Size(88, 88);
             this.btnBrowseInput.TabIndex = 0;
             this.btnBrowseInput.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnBrowseInput, "Browse");
@@ -670,7 +671,7 @@
             this.btnUpdateArchive1.FlatAppearance.BorderSize = 0;
             this.btnUpdateArchive1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUpdateArchive1.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUpdateArchive1.Location = new System.Drawing.Point(93, 3);
+            this.btnUpdateArchive1.Location = new System.Drawing.Point(97, 3);
             this.btnUpdateArchive1.Name = "btnUpdateArchive1";
             this.btnUpdateArchive1.Size = new System.Drawing.Size(16, 88);
             this.btnUpdateArchive1.TabIndex = 0;
@@ -680,16 +681,15 @@
             // tableLayoutPanel5
             // 
             this.tableLayoutPanel5.ColumnCount = 2;
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 79.66102F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20.33898F));
             this.tableLayoutPanel5.Controls.Add(this.btnRemoveSelected, 0, 0);
-            this.tableLayoutPanel5.Controls.Add(this.btnUpdateArchive2, 1, 0);
             this.tableLayoutPanel5.Location = new System.Drawing.Point(0, 202);
             this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(0, 2, 0, 4);
             this.tableLayoutPanel5.Name = "tableLayoutPanel5";
             this.tableLayoutPanel5.RowCount = 1;
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(113, 94);
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(118, 94);
             this.tableLayoutPanel5.TabIndex = 2;
             // 
             // btnRemoveSelected
@@ -701,37 +701,25 @@
             this.btnRemoveSelected.Image = global::Crypt.Properties.Resources.Minus__3D__small_2;
             this.btnRemoveSelected.Location = new System.Drawing.Point(3, 3);
             this.btnRemoveSelected.Name = "btnRemoveSelected";
-            this.btnRemoveSelected.Size = new System.Drawing.Size(84, 88);
+            this.btnRemoveSelected.Size = new System.Drawing.Size(88, 88);
             this.btnRemoveSelected.TabIndex = 0;
             this.btnRemoveSelected.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnRemoveSelected, "Remove selected");
             this.btnRemoveSelected.UseVisualStyleBackColor = true;
             this.btnRemoveSelected.Click += new System.EventHandler(this.btnRemoveSelected_Click);
             // 
-            // btnUpdateArchive2
-            // 
-            this.btnUpdateArchive2.FlatAppearance.BorderSize = 0;
-            this.btnUpdateArchive2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnUpdateArchive2.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUpdateArchive2.Location = new System.Drawing.Point(93, 3);
-            this.btnUpdateArchive2.Name = "btnUpdateArchive2";
-            this.btnUpdateArchive2.Size = new System.Drawing.Size(16, 88);
-            this.btnUpdateArchive2.TabIndex = 0;
-            this.btnUpdateArchive2.UseVisualStyleBackColor = true;
-            this.btnUpdateArchive2.Click += new System.EventHandler(this.btnUpdateArchive2_Click);
-            // 
             // tableLayoutPanel6
             // 
             this.tableLayoutPanel6.ColumnCount = 2;
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 81.03448F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 18.96552F));
             this.tableLayoutPanel6.Controls.Add(this.btnCompressEncrypt, 0, 0);
             this.tableLayoutPanel6.Controls.Add(this.btnCompressEncryptExtra, 1, 0);
-            this.tableLayoutPanel6.Location = new System.Drawing.Point(116, 3);
+            this.tableLayoutPanel6.Location = new System.Drawing.Point(121, 3);
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(107, 94);
+            this.tableLayoutPanel6.Size = new System.Drawing.Size(116, 94);
             this.tableLayoutPanel6.TabIndex = 3;
             // 
             // btnCompressEncrypt
@@ -743,7 +731,7 @@
             this.btnCompressEncrypt.Image = ((System.Drawing.Image)(resources.GetObject("btnCompressEncrypt.Image")));
             this.btnCompressEncrypt.Location = new System.Drawing.Point(3, 3);
             this.btnCompressEncrypt.Name = "btnCompressEncrypt";
-            this.btnCompressEncrypt.Size = new System.Drawing.Size(79, 88);
+            this.btnCompressEncrypt.Size = new System.Drawing.Size(88, 88);
             this.btnCompressEncrypt.TabIndex = 0;
             this.btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnCompressEncrypt, "Compress & Encrypt");
@@ -755,9 +743,9 @@
             this.btnCompressEncryptExtra.FlatAppearance.BorderSize = 0;
             this.btnCompressEncryptExtra.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCompressEncryptExtra.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCompressEncryptExtra.Location = new System.Drawing.Point(88, 3);
+            this.btnCompressEncryptExtra.Location = new System.Drawing.Point(97, 3);
             this.btnCompressEncryptExtra.Name = "btnCompressEncryptExtra";
-            this.btnCompressEncryptExtra.Size = new System.Drawing.Size(15, 88);
+            this.btnCompressEncryptExtra.Size = new System.Drawing.Size(16, 88);
             this.btnCompressEncryptExtra.TabIndex = 0;
             this.btnCompressEncryptExtra.Text = "▼";
             this.btnCompressEncryptExtra.UseVisualStyleBackColor = true;
@@ -766,15 +754,15 @@
             // tableLayoutPanel7
             // 
             this.tableLayoutPanel7.ColumnCount = 2;
-            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 78.9916F));
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 21.0084F));
             this.tableLayoutPanel7.Controls.Add(this.btnCheckKey, 0, 0);
-            this.tableLayoutPanel7.Location = new System.Drawing.Point(116, 101);
+            this.tableLayoutPanel7.Location = new System.Drawing.Point(121, 101);
             this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(3, 1, 0, 2);
             this.tableLayoutPanel7.Name = "tableLayoutPanel7";
             this.tableLayoutPanel7.RowCount = 1;
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel7.Size = new System.Drawing.Size(107, 94);
+            this.tableLayoutPanel7.Size = new System.Drawing.Size(119, 94);
             this.tableLayoutPanel7.TabIndex = 4;
             // 
             // btnCheckKey
@@ -787,7 +775,7 @@
             this.btnCheckKey.Image = ((System.Drawing.Image)(resources.GetObject("btnCheckKey.Image")));
             this.btnCheckKey.Location = new System.Drawing.Point(3, 3);
             this.btnCheckKey.Name = "btnCheckKey";
-            this.btnCheckKey.Size = new System.Drawing.Size(79, 88);
+            this.btnCheckKey.Size = new System.Drawing.Size(88, 88);
             this.btnCheckKey.TabIndex = 0;
             this.btnCheckKey.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnCheckKey, "Check Key");
@@ -797,15 +785,15 @@
             // tableLayoutPanel8
             // 
             this.tableLayoutPanel8.ColumnCount = 2;
-            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 78.9916F));
+            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 21.0084F));
             this.tableLayoutPanel8.Controls.Add(this.btnGenerateKey, 0, 0);
-            this.tableLayoutPanel8.Location = new System.Drawing.Point(116, 202);
+            this.tableLayoutPanel8.Location = new System.Drawing.Point(121, 202);
             this.tableLayoutPanel8.Margin = new System.Windows.Forms.Padding(3, 2, 0, 0);
             this.tableLayoutPanel8.Name = "tableLayoutPanel8";
             this.tableLayoutPanel8.RowCount = 1;
             this.tableLayoutPanel8.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel8.Size = new System.Drawing.Size(107, 94);
+            this.tableLayoutPanel8.Size = new System.Drawing.Size(119, 94);
             this.tableLayoutPanel8.TabIndex = 5;
             // 
             // btnGenerateKey
@@ -818,7 +806,7 @@
             this.btnGenerateKey.Image = ((System.Drawing.Image)(resources.GetObject("btnGenerateKey.Image")));
             this.btnGenerateKey.Location = new System.Drawing.Point(3, 3);
             this.btnGenerateKey.Name = "btnGenerateKey";
-            this.btnGenerateKey.Size = new System.Drawing.Size(79, 88);
+            this.btnGenerateKey.Size = new System.Drawing.Size(88, 88);
             this.btnGenerateKey.TabIndex = 0;
             this.btnGenerateKey.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnGenerateKey, "Generate Key");
@@ -833,7 +821,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.ClientSize = new System.Drawing.Size(669, 576);
+            this.ClientSize = new System.Drawing.Size(676, 576);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -916,7 +904,6 @@
         private System.Windows.Forms.Button btnUpdateArchive1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
-        private System.Windows.Forms.Button btnUpdateArchive2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel6;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel8;

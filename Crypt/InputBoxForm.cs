@@ -1,6 +1,6 @@
 ﻿/********************************************************************************************************************
 / Needle in a Haystack in a Crypt v0.9.
-/ Copyright (C) 2016-2020 by Horia Nedelciuc from Chisinau, Moldova.
+/ Copyright (C) 2016-2023 by Horia Nedelciuc from Chisinau, Moldova.
 /********************************************************************************************************************
 / Input box window.
 /********************************************************************************************************************/
@@ -45,14 +45,7 @@ namespace Crypt
             label.Text = labelText;
             Text = windowTitle;
             
-            if (confirmationButtons == HelperService.ConfirmationButtons.YesToAllYesNoNoToAll)
-            {
-                btnBrowse.Visible = false;
-                textBoxOutputFile.Visible = false;
-                btnOk.Text = "Yes";
-                btnCancel.Text = "No";
-            }
-            else if (confirmationButtons == HelperService.ConfirmationButtons.ShortcutGeneratorButtons)
+            if (confirmationButtons == HelperService.ConfirmationButtons.ShortcutGeneratorButtons)
             {
                 btnBrowse.Visible = false;
                 textBoxOutputFile.Visible = false;
@@ -62,6 +55,13 @@ namespace Crypt
                 ComponentResourceManager resources = new ComponentResourceManager(typeof(CryptForm));
                 label.Image = (Image)resources.GetObject("btnShortcut.Image");
                 label.ImageAlign = ContentAlignment.MiddleCenter;
+            }
+            else
+            {
+                btnBrowse.Visible = false;
+                textBoxOutputFile.Visible = false;
+                btnOk.Text = "Yes";
+                btnCancel.Text = "No";
             }
 
             AdjustDisplayScaling();
