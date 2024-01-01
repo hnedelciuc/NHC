@@ -1039,6 +1039,11 @@ class MainService
                             var tmpIndex = 0;
                             var tmpArray = outputDirectoryName == currentOutputDirectoryName ? new string[0] : currentOutputDirectoryName.Substring(outputDirectoryName.Length + 1).Split('\\');
 
+                            if (LongDirectory.Exists(outputDirectoryName) && !HelperService.entriesProcessed.ContainsKey(outputDirectoryName))
+                            {
+                                thisNrOfDirectories--;
+                            }
+
                             while (tmpIndex <= tmpArray.Length)
                             {
                                 if (!LongDirectory.Exists(tmpDirectoryName))

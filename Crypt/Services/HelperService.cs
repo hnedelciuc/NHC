@@ -170,7 +170,17 @@ internal class HelperService
         var stack = new Stack<TreeNode>();
         var rootDirectoryName = LongDirectory.GetJustDirectoryName(path).TrimStart('\\');
         rootDirectoryName = rootDirectoryName == string.Empty ? path.Replace(":\\", "Drive") : rootDirectoryName;
-        var rootNode = new TreeNode(rootDirectoryName) { Name = path, ImageIndex = 2, SelectedImageIndex = 2, Tag = new { relativePath = rootDirectoryName } };
+        var rootNode = new TreeNode(rootDirectoryName)
+        {
+            Name = path,
+            ImageIndex = 2,
+            SelectedImageIndex = 2,
+            Tag = new DDict(new Dictionary<string, dynamic>()
+            {
+                { "relativePath", rootDirectoryName },
+                { "isArchiveRoot", false }
+            })
+         };
         stack.Push(rootNode);
 
         while (stack.Count > 0)
@@ -195,12 +205,29 @@ internal class HelperService
                             break;
 
                         string relativePath = LongDirectory.Combine(rootDirectoryName, LongDirectory.TrimPath(directory.Substring(path.Length)));
-                        object pathObj = new { relativePath, fullPath = directory, isDirectory = true, uncompressedFileSize = 0 };
+                        object pathObj = new DDict(
+                            new Dictionary<string, dynamic>()
+                            {
+                                { "relativePath", relativePath },
+                                { "fullPath", directory },
+                                { "isDirectory", true },
+                                { "uncompressedFileSize", 0 }
+                            });
                         if (!importedPaths.Contains(pathObj))
                         {
                             importedPaths.Add(pathObj);
                         }
-                        var childDirectoryNode = new TreeNode(LongDirectory.GetJustDirectoryName(directory)) { Name = directory, ImageIndex = 2, SelectedImageIndex = 2, Tag = new { relativePath } };
+                        var childDirectoryNode = new TreeNode(LongDirectory.GetJustDirectoryName(directory))
+                        { 
+                            Name = directory,
+                            ImageIndex = 2,
+                            SelectedImageIndex = 2,
+                            Tag = new DDict(new Dictionary<string, dynamic>()
+                            { 
+                                { "relativePath", relativePath },
+                                { "isArchiveRoot", false }
+                            })
+                        };
                         currentNode.Nodes.Add(childDirectoryNode);
                         stack.Push(childDirectoryNode);
                     }
@@ -219,13 +246,30 @@ internal class HelperService
                             var uncompressedFileSize = stream.Length;
                             uncompressedFilesSize += uncompressedFileSize;
 
-                            object pathObj = new { relativePath, fullPath = file, isDirectory = false, uncompressedFileSize };
+                            var pathObj = new DDict(
+                                new Dictionary<string, dynamic>()
+                                {
+                                    { "relativePath", relativePath },
+                                    { "fullPath", file },
+                                    { "isDirectory", false },
+                                    { "uncompressedFileSize", uncompressedFileSize }
+                                });
                             if (!importedPaths.Contains(pathObj))
                             {
                                 importedPaths.Add(pathObj);
                             }
 
-                            currentNode.Nodes.Add(new TreeNode(Path.GetFileName(file)) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { relativePath } });
+                            currentNode.Nodes.Add(
+                                new TreeNode(Path.GetFileName(file))
+                                {
+                                    ImageIndex = 1,
+                                    SelectedImageIndex = 1,
+                                    Tag = new DDict(new Dictionary<string, dynamic>()
+                                    {
+                                        { "relativePath", relativePath },
+                                        { "isArchiveRoot", false }
+                                    })
+                                });
                         }
                     }
                 }
@@ -238,9 +282,19 @@ internal class HelperService
 
         if (!treeView.Nodes.ContainsKey(rootNode.Name))
         {
-            rootNode.Tag = new { relativePath = rootNode.Text };
+            rootNode.Tag = new DDict(new Dictionary<string, dynamic>()
+            {
+                { "relativePath", rootNode.Text },
+                { "isArchiveRoot", false }
+            });
             treeView.Nodes.Add(rootNode);
-            importedPaths.Add(new { relativePath = rootNode.Text, fullPath = rootNode.Name, isDirectory = true, uncompressedFileSize = 0 });
+            importedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+            {
+                { "relativePath", rootNode.Text },
+                { "fullPath", rootNode.Name },
+                { "isDirectory", true },
+                { "uncompressedFileSize", 0 }
+            }));
         }
         else
         {
@@ -1375,8 +1429,23 @@ internal class HelperService
         foreach (var file in argFiles)
         {
             uncompressedFileSize = file.Item2;
-            if (isEncrypt) argPaths.Add(new { relativePath = Path.GetFileName(file.Item1), fullPath = LongFile.GetWin32LongPath(file.Item1), isDirectory = false, uncompressedFileSize });
-            else argPaths.Add(new { relativePath = Path.GetFileName(file.Item1), fullPath = LongFile.GetWin32LongPath(file.Item1), isDirectory = false, keyFilePath = keyFileName, password = pwd, cryptionAlgorithm });
+            if (isEncrypt)
+                argPaths.Add(new DDict (new Dictionary<string, dynamic>()
+            {
+                { "relativePath", Path.GetFileName(file.Item1) },
+                { "fullPath", LongFile.GetWin32LongPath(file.Item1) },
+                { "isDirectory", false },
+                { "uncompressedFileSize", uncompressedFileSize }
+            }));
+            else argPaths.Add(new DDict(new Dictionary<string, dynamic>()
+            {
+                { "relativePath", Path.GetFileName(file.Item1) },
+                { "fullPath", LongFile.GetWin32LongPath(file.Item1) },
+                { "isDirectory", false },
+                { "keyFilePath", keyFileName },
+                { "password", pwd },
+                { "cryptionAlgorithm", cryptionAlgorithm }
+            }));
         }
 
         if (argPaths.Count == 0)

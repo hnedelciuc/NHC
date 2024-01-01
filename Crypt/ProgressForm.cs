@@ -5,12 +5,15 @@
 // Progress bar / result window.
 //********************************************************************************************************************//
 
+using GracefulDynamicDictionary;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -80,6 +83,7 @@ namespace Crypt
         private string resultMessage = String.Empty;
         private bool compressEncryptSuccess = false;
         private int decryptCount = 0;
+        private int encryptCount = 0;
         private string currentFileProcessed = String.Empty;
         private long numberOfEntriesProcessed = 0;
         private DateTime startDateTime;
@@ -200,13 +204,26 @@ namespace Crypt
                     {
                         startDateTime = DateTime.Now;
                         HelperService.totalGlobalPos = 0;
+                        var itemsList = new List<dynamic>();
 
                         try
                         {
-                            for (int i = 0; i < items.Count; i++)
+                            bool isNHCArchive;
+
+                            // filtering out items that are not NHC archives
+                            for (dynamic i = 0; i < items.Count; i++)
                             {
-                                dynamic item = items[i];
+                                try { isNHCArchive = items[i].cryptionAlgorithm != null; }
+                                catch { isNHCArchive = false; }
+
+                                if (isNHCArchive) { itemsList.Add(items[i]); }
+                            }
+
+                            for (int i = 0; i < itemsList.Count; i++)
+                            {
+                                dynamic item = itemsList[i];
                                 inputFileName = item.fullPath;
+                                
 
                                 CryptionService.LoadKey(null, out keyArray, out IV, HelperService.CryptionAlgorithm.NeedleCryptKey, item.password);
                                 loadKeyResult = CryptionService.LoadKey(item.keyFilePath, out keyByte, out IV, item.cryptionAlgorithm, item.password);
@@ -270,11 +287,11 @@ namespace Crypt
                             workerIsDone = true;
                         }
 
-                        if (decryptCount == items.Count && !HelperService.backgroundWorkerClosePending)
+                        if (decryptCount == itemsList.Count && !HelperService.backgroundWorkerClosePending)
                         {
                             // Displays the Success Message.
                             resultMessage = "Success" + Environment.NewLine + Environment.NewLine +
-                                items.Count + " crypted archive files have been decompressed && decrypted successfully. " +
+                                itemsList.Count + " crypted archive files have been decompressed && decrypted successfully. " +
                                 Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed +
                                 " entries have been extracted.";
                         }
@@ -284,7 +301,7 @@ namespace Crypt
                             // Displays the Success Message.
                             resultMessage = "Partial Success / Partial Fail" + Environment.NewLine + Environment.NewLine +
                                 decryptCount + " crypted files have been decompressed && decrypted successfully, while " +
-                                (items.Count - decryptCount) + " have failed, and the failure occured at " +
+                                (itemsList.Count - decryptCount) + " have failed, and the failure occured at " +
                                 inputFileName + " file." + Environment.NewLine + Environment.NewLine +
                                 resultMessage + Environment.NewLine + Environment.NewLine +
                                 numberOfEntriesProcessed + " entries have been extracted.";
@@ -312,12 +329,30 @@ namespace Crypt
 
                         try
                         {
-                            tempDirectory = ((dynamic)HelperService.selectedPaths[0]).fullPath.Replace("\\" + ((dynamic)HelperService.selectedPaths[0]).relativePath, string.Empty);
-
                             for (int i = 0; i < items.Count; i++)
                             {
+                                tempDirectory = ((dynamic)HelperService.selectedPaths[0]).fullPath.Replace("\\" + ((dynamic)HelperService.selectedPaths[0]).relativePath, string.Empty);
+
                                 dynamic item = items[i];
                                 inputFileName = item.fullPath;
+                                bool isNHCArchive = false;
+                                string outputDirectory;
+
+                                try { isNHCArchive = item.cryptionAlgorithm != null; } catch { }
+
+                                if (!isNHCArchive)
+                                {
+                                    outputDirectory = LongDirectory.GetDirectoryName(inputFileName);
+                                    HelperService.selectedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+                                    {
+                                        { "relativePath", item.relativePath },
+                                        { "fullPath", item.fullPath },
+                                        { "isDirectory", item.isDirectory },
+                                        { "currentArchiveName", "" }
+                                    }));
+                                    continue;
+                                }
+                                else outputDirectory = tempDirectory.Clone().ToString();
 
                                 CryptionService.LoadKey(null, out keyArray, out IV, HelperService.CryptionAlgorithm.NeedleCryptKey, item.password);
                                 loadKeyResult = CryptionService.LoadKey(item.keyFilePath, out keyByte, out IV, item.cryptionAlgorithm, item.password);
@@ -335,7 +370,7 @@ namespace Crypt
                                 else
                                 {
                                     MainService.DecompressDecryptArchive(
-                                            tempDirectory,
+                                            outputDirectory,
                                             inputFileName,
                                             itemsToBeExtracted,
                                             itemsToBeExtractedCorrespondingArchive,
@@ -405,6 +440,8 @@ namespace Crypt
                                     throw new Exception("The task was canceled.");
 
                                 worker.ReportProgress(100);
+
+                                encryptCount = HelperService.selectedPaths.ToArray().Count(p => ((dynamic)p).currentArchiveName == ""); // if no exception thrown thus far, then all these files have been encrypted
                             }
                         }
                         catch (InvalidDataException ex)
@@ -424,7 +461,7 @@ namespace Crypt
                             workerIsDone = true;
                         }
 
-                        if (string.IsNullOrEmpty(resultMessage) && decryptCount == items.Count && !HelperService.backgroundWorkerClosePending)
+                        if (string.IsNullOrEmpty(resultMessage) && (encryptCount + decryptCount) == items.Count && !HelperService.backgroundWorkerClosePending)
                         {
                             // Displays the Success Message.
                             resultMessage = "Success" + Environment.NewLine + Environment.NewLine +

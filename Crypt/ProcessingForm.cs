@@ -5,8 +5,10 @@
 // Processing bar window.
 //********************************************************************************************************************//
 
+using GracefulDynamicDictionary;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -243,8 +245,25 @@ namespace Crypt
                                         HelperService.uncompressedFilesSize += uncompressedFileSize;
                                         stream.Close();
                                         stream.Dispose();
-                                        treeView1.Nodes.Add(new TreeNode(node.Text) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { relativePath = node.Text } });
-                                        HelperService.importedPaths.Add(new { relativePath = node.Text, fullPath = node.Name, isDirectory = false, uncompressedFileSize });
+                                        treeView1.Nodes.Add(new TreeNode(node.Text)
+                                        {
+                                            Name = node.FullPath,
+                                            ImageIndex = 1,
+                                            SelectedImageIndex = 1,
+                                            Tag = new DDict(new Dictionary<string, dynamic>()
+                                            {
+                                                { "relativePath", node.Text },
+                                                { "fullPath", node.Name },
+                                                { "isArchiveRoot", false }
+                                            })
+                                        });
+                                        HelperService.importedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+                                        {
+                                            { "relativePath", node.Text },
+                                            { "fullPath", node.Name },
+                                            { "isDirectory", false},
+                                            { "uncompressedFileSize", uncompressedFileSize }
+                                        }));
                                     }
                                 }
                             }
@@ -297,10 +316,21 @@ namespace Crypt
 
                                         HelperService.uncompressedFilesSize += uncompressedFileSize;
                                     }
-                                    var pathObj = new { relativePath = filename, fullPath = path, isDirectory = false, uncompressedFileSize };
+                                    var pathObj = new DDict(new Dictionary<string, dynamic>()
+                                    {
+                                        { "relativePath", filename },
+                                        { "fullPath", path },
+                                        { "isDirectory", false },
+                                        { "uncompressedFileSize", uncompressedFileSize }
+                                    });
                                     if (!HelperService.importedPaths.Contains(pathObj))
                                     {
-                                        treeView1.Nodes.Add(new TreeNode(filename) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { relativePath = filename } });
+                                        treeView1.Nodes.Add(new TreeNode(filename)
+                                        {
+                                            ImageIndex = 1,
+                                            SelectedImageIndex = 1,
+                                            Tag = pathObj
+                                        });
                                         HelperService.importedPaths.Add(pathObj);
                                     }
                                 }
@@ -350,10 +380,22 @@ namespace Crypt
 
                                     HelperService.uncompressedFilesSize += uncompressedFileSize;
 
-                                    var pathObj = new { path.relativePath, path.fullPath, isDirectory = false, uncompressedFileSize };
+                                    var pathObj = new DDict(new Dictionary<string, dynamic>()
+                                    {
+                                        { "relativePath", path.relativePath },
+                                        { "fullPath", path.fullPath },
+                                        { "isDirectory", false },
+                                        { "uncompressedFileSize", uncompressedFileSize }
+                                    });
+
                                     if (!HelperService.importedPaths.Contains(pathObj))
                                     {
-                                        treeView1.Nodes.Add(new TreeNode(path.relativePath) { ImageIndex = 1, SelectedImageIndex = 1, Tag = new { path.relativePath } });
+                                        treeView1.Nodes.Add(new TreeNode(path.relativePath)
+                                        {
+                                            ImageIndex = 1,
+                                            SelectedImageIndex = 1,
+                                            Tag = pathObj
+                                        });
                                         HelperService.importedPaths.Add(pathObj);
                                     }
                                 }
@@ -475,6 +517,8 @@ namespace Crypt
 
                             while (true)
                             {
+                                if (tmpNode == null) break;
+
                                 if (tmpNode.Tag.isArchiveRoot == true)
                                 {
                                     currentArchiveName = tmpNode.Name;
@@ -483,8 +527,14 @@ namespace Crypt
                                 tmpNode = tmpNode.Parent;
                             }
 
-                            if (!isArchiveRoot && dynamicNode.Tag.relativePath != null && dynamicNode.Tag.isDirectory != null)
-                                HelperService.selectedPaths.Add(new { dynamicNode.Tag.relativePath, fullPath = "", dynamicNode.Tag.isDirectory, currentArchiveName });
+                            if (currentArchiveName != "" && !isArchiveRoot && dynamicNode.Tag.relativePath != null && dynamicNode.Tag.isDirectory != null)
+                                HelperService.selectedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+                                {
+                                    { "relativePath", dynamicNode.Tag.relativePath },
+                                    { "fullPath", "" },
+                                    { "isDirectory", dynamicNode.Tag.isDirectory },
+                                    { "currentArchiveName", currentArchiveName }
+                                }));
                         }
 
                         HelperService.selectedPaths = new ArrayList(HelperService.selectedPaths.ToArray().Distinct().ToArray());
@@ -542,13 +592,13 @@ namespace Crypt
 
                                 var dynamicNode = (dynamic)node;
                                 var tmpNode = (dynamic)node;
-                                var isArchiveRoot = dynamicNode.Tag == null;
+                                var isArchiveRoot = dynamicNode.Tag.isArchiveRoot ?? false;
 
                                 if (extractAll == true)
                                 {
-                                    if (!isArchiveRoot)
+                                    if (isArchiveRoot)
                                     {
-                                        isArchiveRoot = dynamicNode.Tag.isArchiveRoot;
+                                        //isArchiveRoot = dynamicNode.Tag.isArchiveRoot;
                                         currentArchiveName = dynamicNode.Name;
                                     }
                                 }
@@ -565,7 +615,13 @@ namespace Crypt
                                     }
                                 }
                                 if (!isArchiveRoot && dynamicNode.Tag.relativePath != null && dynamicNode.Tag.isDirectory != null)
-                                    HelperService.selectedPaths.Add(new { dynamicNode.Tag.relativePath, fullPath = LongDirectory.Combine(tempDirectory, dynamicNode.Tag.relativePath), dynamicNode.Tag.isDirectory, currentArchiveName });
+                                    HelperService.selectedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+                                    {
+                                        { "relativePath", dynamicNode.Tag.relativePath },
+                                        { "fullPath", LongDirectory.Combine(tempDirectory, dynamicNode.Tag.relativePath) },
+                                        { "isDirectory", dynamicNode.Tag.isDirectory },
+                                        { "currentArchiveName", currentArchiveName }
+                                    }));
                             }
                         }
                         catch { }

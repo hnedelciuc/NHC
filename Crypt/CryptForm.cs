@@ -5,8 +5,10 @@
 / Main window / main menu.
 /********************************************************************************************************************/
 
+using GracefulDynamicDictionary;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
@@ -39,13 +41,13 @@ namespace Crypt
         MenuItem menuTreeViewItem1 = new MenuItem("Info Regarding Selected Entries");
         MenuItem menuTreeViewItem3 = new MenuItem("Update Archive Contents");
         MenuItem menuTreeViewItem4 = new MenuItem("Add .NHC Archive to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
-        //MenuItem menuTreeViewItem5 = new MenuItem("Add Files && Folders to Current Node"); // TO DO
+        MenuItem menuTreeViewItem5 = new MenuItem("Add Files && Folders to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
         ContextMenu menuCompressEncryptExtra = new ContextMenu();
         MenuItem menuCompressEncryptExtraItem1 = new MenuItem("Info Regarding Selected Entries");
         MenuItem menuCompressEncryptExtraItem3 = new MenuItem("Update Archive Contents");
         ContextMenu menuUpdateArchive1 = new ContextMenu();
         MenuItem menuUpdateArchive1Item1 = new MenuItem("Add .NHC Archive to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
-        //MenuItem menuUpdateArchive1Item3 = new MenuItem("Add Files && Folders to Current Node"); // TO DO
+        MenuItem menuUpdateArchive1Item3 = new MenuItem("Add Files && Folders to Current Archive"); // TO DO: make it "to Current Archive at Selected Node"
         TreeNode clickedNode = null;
         string prevComboBoxSplitArchiveSizeText = string.Empty;
 
@@ -143,7 +145,16 @@ namespace Crypt
 
                     HelperService.importedPaths.Clear();
 
-                    HelperService.importedPaths.Add(new { alreadyOpened = false, relativePath = Path.GetFileName(outputFileName), fullPath = LongFile.GetWin32LongPath(outputFileName), isDirectory = false, keyFilePath = HelperService.keyFileName, password = HelperService.pwd, HelperService.cryptionAlgorithm });
+                    HelperService.importedPaths.Add(new DDict(new Dictionary<string, dynamic>()
+                    {
+                        { "alreadyOpened", false },
+                        { "relativePath", Path.GetFileName(outputFileName) },
+                        { "fullPath", LongFile.GetWin32LongPath(outputFileName) },
+                        { "isDirectory", false },
+                        { "keyFilePath", HelperService.keyFileName },
+                        { "password", HelperService.pwd },
+                        { "cryptionAlgorithm", HelperService.cryptionAlgorithm }
+                    }));
 
                     HelperService.exitOnClose = false;
 
@@ -176,7 +187,26 @@ namespace Crypt
 
         private void menuTreeViewItem5_Click(object sender, EventArgs e)
         {
-            // TO DO
+            FileFolderExplorerForm frmFileFolderExplorer = new FileFolderExplorerForm();
+
+            frmFileFolderExplorer.ShowDialog();
+
+            ArrayList addedNodes = frmFileFolderExplorer.selectedNodes;
+
+            ProcessingForm frmProcessing = new ProcessingForm(HelperService.ProcessingTask.ImportFilesDirectories_btnBrowseInput_Click, addedNodes);
+            frmProcessing.ShowDialog();
+
+            treeView1.BeginUpdate();
+            frmProcessing.treeView1.BeginUpdate();
+            treeView1.SelectedNodes = frmProcessing.treeView1.SelectedNodes;
+            ArrayList nodes = new ArrayList(frmProcessing.treeView1.Nodes);
+            foreach (TreeNode node in nodes)
+            {
+                node.Remove(); // remove from frmProcessing.treeView1
+                treeView1.Nodes.Add(node); // add to treeView1
+            }
+            frmProcessing.treeView1.EndUpdate();
+            treeView1.EndUpdate();
         }
 
         /********************************************************************************************************************/
@@ -743,6 +773,7 @@ namespace Crypt
             HelperService.cryptionSetting = HelperService.CryptionOptions.Decrypt;
             menuTreeViewItem3.Visible = true;
             menuTreeViewItem4.Visible = true;
+            menuTreeViewItem5.Visible = true;
             menuCompressEncryptExtraItem3.Visible = true;
             btnUpdateArchive1.Visible = true;
             btnUpdateArchive1.Text = "▼";
@@ -1509,11 +1540,11 @@ namespace Crypt
             menuTreeView.MenuItems.Add(menuTreeViewItem1);
             menuTreeView.MenuItems.Add(menuTreeViewItem3);
             menuTreeView.MenuItems.Add(menuTreeViewItem4);
-            //menuTreeView.MenuItems.Add(menuTreeViewItem5);
+            menuTreeView.MenuItems.Add(menuTreeViewItem5);
             menuTreeViewItem1.Click += new EventHandler(menuTreeViewItem1_Click);
             menuTreeViewItem3.Click += new EventHandler(menuTreeViewItem3_Click);
             menuTreeViewItem4.Click += new EventHandler(menuTreeViewItem4_Click);
-            //menuTreeViewItem5.Click += new EventHandler(menuTreeViewItem5_Click);
+            menuTreeViewItem5.Click += new EventHandler(menuTreeViewItem5_Click);
 
             menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem1);
             menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem3);
@@ -1521,9 +1552,9 @@ namespace Crypt
             menuCompressEncryptExtraItem3.Click += new EventHandler(menuCompressEncryptExtraItem3_Click);
 
             menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item1);
-            //menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item3);
+            menuUpdateArchive1.MenuItems.Add(menuUpdateArchive1Item3);
             menuUpdateArchive1Item1.Click += new EventHandler(menuUpdateArchive1Item2_Click);
-            //menuUpdateArchive1Item3.Click += new EventHandler(menuUpdateArchive1Item3_Click);
+            menuUpdateArchive1Item3.Click += new EventHandler(menuUpdateArchive1Item3_Click);
 
             HelperService.exitOnClose = true;
         }
