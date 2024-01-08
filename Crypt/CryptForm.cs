@@ -791,7 +791,7 @@ namespace Crypt
             groupBoxOverwriteFiles.Enabled = true;
             //groupBoxChooseCompressionLevel.Enabled = false;
             label1.Text = "Please choose input files (archives) for extraction:";
-            label2.Text = "Please choose output folder for extracting:";
+            label2.Text = "Please choose output folder for extraction:";
             if (isManualCompressEncryptCheckChanged)
             {
                 HelperService.importedPaths = new ArrayList();
