@@ -159,7 +159,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(317, 14);
             this.label3.TabIndex = 1;
-            this.label3.Text = "Please choose existing cryption key file:";
+            this.label3.Text = "Please choose existing encryption key file:";
             // 
             // textBoxKeyFile
             // 
@@ -185,7 +185,7 @@
             this.groupBoxChooseCryptionKey.Size = new System.Drawing.Size(234, 93);
             this.groupBoxChooseCryptionKey.TabIndex = 0;
             this.groupBoxChooseCryptionKey.TabStop = false;
-            this.groupBoxChooseCryptionKey.Text = "Choose Cryption Key";
+            this.groupBoxChooseCryptionKey.Text = "Encryption Key";
             // 
             // radioButtonGenerateNewKey
             // 
@@ -193,9 +193,9 @@
             this.radioButtonGenerateNewKey.Location = new System.Drawing.Point(12, 66);
             this.radioButtonGenerateNewKey.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonGenerateNewKey.Name = "radioButtonGenerateNewKey";
-            this.radioButtonGenerateNewKey.Size = new System.Drawing.Size(199, 17);
+            this.radioButtonGenerateNewKey.Size = new System.Drawing.Size(168, 17);
             this.radioButtonGenerateNewKey.TabIndex = 0;
-            this.radioButtonGenerateNewKey.Text = "Generate New Random Cryption Key";
+            this.radioButtonGenerateNewKey.Text = "Generate New Encryption Key";
             this.radioButtonGenerateNewKey.UseVisualStyleBackColor = true;
             this.radioButtonGenerateNewKey.CheckedChanged += new System.EventHandler(this.radioButtonGenerateNewKey_CheckedChanged);
             // 
@@ -205,9 +205,9 @@
             this.radioButtonUseExistingKey.Location = new System.Drawing.Point(12, 45);
             this.radioButtonUseExistingKey.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonUseExistingKey.Name = "radioButtonUseExistingKey";
-            this.radioButtonUseExistingKey.Size = new System.Drawing.Size(145, 17);
+            this.radioButtonUseExistingKey.Size = new System.Drawing.Size(157, 17);
             this.radioButtonUseExistingKey.TabIndex = 0;
-            this.radioButtonUseExistingKey.Text = "Use Existing Cryption Key";
+            this.radioButtonUseExistingKey.Text = "Use Existing Encryption Key";
             this.radioButtonUseExistingKey.UseVisualStyleBackColor = true;
             this.radioButtonUseExistingKey.CheckedChanged += new System.EventHandler(this.radioButtonUseExistingKey_CheckedChanged);
             // 
@@ -218,10 +218,10 @@
             this.radioButtonUseBuiltInDefault.Location = new System.Drawing.Point(12, 23);
             this.radioButtonUseBuiltInDefault.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonUseBuiltInDefault.Name = "radioButtonUseBuiltInDefault";
-            this.radioButtonUseBuiltInDefault.Size = new System.Drawing.Size(170, 17);
+            this.radioButtonUseBuiltInDefault.Size = new System.Drawing.Size(191, 17);
             this.radioButtonUseBuiltInDefault.TabIndex = 0;
             this.radioButtonUseBuiltInDefault.TabStop = true;
-            this.radioButtonUseBuiltInDefault.Text = "No Encryption (Built-In Default)";
+            this.radioButtonUseBuiltInDefault.Text = "No Encryption Key (Built-In Default)";
             this.radioButtonUseBuiltInDefault.UseVisualStyleBackColor = true;
             this.radioButtonUseBuiltInDefault.CheckedChanged += new System.EventHandler(this.radioButtonUseBuiltInDefault_CheckedChanged);
             // 
@@ -260,7 +260,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(317, 14);
             this.label5.TabIndex = 0;
-            this.label5.Text = "Type your password:";
+            this.label5.Text = "Please type encryption password:";
             // 
             // maskedTextBoxPassword
             // 
@@ -311,7 +311,7 @@
             this.groupBoxChooseCryptionAlgorithm.Size = new System.Drawing.Size(233, 55);
             this.groupBoxChooseCryptionAlgorithm.TabIndex = 1;
             this.groupBoxChooseCryptionAlgorithm.TabStop = false;
-            this.groupBoxChooseCryptionAlgorithm.Text = "Choose Cryption Algorithm";
+            this.groupBoxChooseCryptionAlgorithm.Text = "Encryption Algorithm";
             // 
             // comboBoxChooseCryptionAlgorithm
             // 
@@ -610,10 +610,10 @@
             // 
             // radioButtonDecompressDecrypt
             // 
-            this.radioButtonDecompressDecrypt.Location = new System.Drawing.Point(10, 52);
+            this.radioButtonDecompressDecrypt.Location = new System.Drawing.Point(8, 52);
             this.radioButtonDecompressDecrypt.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonDecompressDecrypt.Name = "radioButtonDecompressDecrypt";
-            this.radioButtonDecompressDecrypt.Size = new System.Drawing.Size(99, 35);
+            this.radioButtonDecompressDecrypt.Size = new System.Drawing.Size(101, 35);
             this.radioButtonDecompressDecrypt.TabIndex = 0;
             this.radioButtonDecompressDecrypt.TabStop = true;
             this.radioButtonDecompressDecrypt.Text = "Extract Archive";
@@ -623,10 +623,10 @@
             // radioButtonCompressEncrypt
             // 
             this.radioButtonCompressEncrypt.Checked = true;
-            this.radioButtonCompressEncrypt.Location = new System.Drawing.Point(10, 23);
+            this.radioButtonCompressEncrypt.Location = new System.Drawing.Point(8, 23);
             this.radioButtonCompressEncrypt.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonCompressEncrypt.Name = "radioButtonCompressEncrypt";
-            this.radioButtonCompressEncrypt.Size = new System.Drawing.Size(98, 32);
+            this.radioButtonCompressEncrypt.Size = new System.Drawing.Size(101, 32);
             this.radioButtonCompressEncrypt.TabIndex = 0;
             this.radioButtonCompressEncrypt.TabStop = true;
             this.radioButtonCompressEncrypt.Text = "Create Archive";
