@@ -108,7 +108,7 @@ namespace Crypt
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             saveFileDialog.Filter = "Crypt File|*.nhc|Other File|*.*";
-            saveFileDialog.Title = "Choose Output File (encrypted archive)";
+            saveFileDialog.Title = "Choose Output File (archive)";
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {

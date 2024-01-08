@@ -136,12 +136,12 @@ namespace Crypt
             }
             switch (taskId)
             {
-                case HelperService.ProcessingTask.OpenArchive: labelOutput.Text = "Opening Encrypted Archive..."; break;
+                case HelperService.ProcessingTask.OpenArchive: labelOutput.Text = "Opening Archive..."; break;
                 case HelperService.ProcessingTask.ImportFilesDirectories_btnBrowseInput_Click:
                 case HelperService.ProcessingTask.ImportFilesDirectories_treeView1_DragDrop:
                 case HelperService.ProcessingTask.ImportFilesDirectories_LoadInputFiles: labelOutput.Text = "Importing Files && Directories..."; break;
                 case HelperService.ProcessingTask.InfoRegardingSelectedEntries: labelOutput.Text = "Retrieving Info Regarding Selected Entries..."; break;
-                case HelperService.ProcessingTask.DecompressDecryptSelectedItemsOnly: labelOutput.Text = "Preparing for decompression && decryption..."; break;
+                case HelperService.ProcessingTask.DecompressDecryptSelectedItemsOnly: labelOutput.Text = "Preparing for extraction..."; break;
                 case HelperService.ProcessingTask.UpdateArchiveContents: labelOutput.Text = "Updating Archive Contents..."; break;
             }
         }
@@ -200,7 +200,7 @@ namespace Crypt
                             {
                                 // Displays the Success Message.
                                 resultMessage = "Partial Success / Partial Fail" + Environment.NewLine + Environment.NewLine +
-                                    decryptCount + " crypted files have been opened successfully, while " +
+                                    decryptCount + " archived files have been opened successfully, while " +
                                     (paths.Count - decryptCount) + " have failed, and the failure occured at " +
                                     inputFileName + " file." + Environment.NewLine + Environment.NewLine +
                                     resultMessage + Environment.NewLine + Environment.NewLine +
@@ -209,7 +209,7 @@ namespace Crypt
                             else
                             {
                                 resultMessage = "Fail" + Environment.NewLine + Environment.NewLine +
-                                    $"Crypted file{s} could not be opened." +
+                                    $"Archived file{s} could not be opened." +
                                 Environment.NewLine + Environment.NewLine + resultMessage +
                                 Environment.NewLine + Environment.NewLine + nrOfFilesProcessed + $" files from inside the archive{s} have been processed.";
 

@@ -97,7 +97,7 @@ namespace Crypt
                 }
                 else if (maskedTextBoxPassword.Enabled == true && string.IsNullOrEmpty(maskedTextBoxPassword.Text))
                 {
-                    MessageBox.Show("Please make sure you have typed a password in order for the decryption to take place.",
+                    MessageBox.Show("Please make sure you have typed a password in order for the extraction to take place.",
                         "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
@@ -168,7 +168,7 @@ namespace Crypt
         private void menuTreeViewItem4_Click(object sender, EventArgs e)
         {
             openFileDialog1.Filter = "Crypt File|*.nhc|All Files|*.*";
-            openFileDialog1.Title = "Choose Input Files (encrypted archives)";
+            openFileDialog1.Title = "Choose Input Files (archives)";
             openFileDialog1.Multiselect = true;
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -282,7 +282,7 @@ namespace Crypt
             if (radioButtonDecompressDecrypt.Checked == true)
             {
                 openFileDialog1.Filter = "Crypt File|*.nhc|All Files|*.*";
-                openFileDialog1.Title = "Choose Input Files (encrypted archives)";
+                openFileDialog1.Title = "Choose Input Files (archives)";
                 openFileDialog1.Multiselect = true;
 
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -512,7 +512,7 @@ namespace Crypt
             if (radioButtonCompressEncrypt.Checked == true)
             {
                 saveFileDialog1.Filter = "Crypt File|*.nhc|Other File|*.*";
-                saveFileDialog1.Title = "Choose Output File (encrypted archive)";
+                saveFileDialog1.Title = "Choose Output File (archive)";
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
@@ -751,8 +751,8 @@ namespace Crypt
             radioButtonGenerateNewKey.Enabled = true;
             groupBoxOverwriteFiles.Enabled = false;
             groupBoxChooseCompressionLevel.Enabled = true;
-            label1.Text = "Please choose input files to be encrypted:";
-            label2.Text = "Please choose output file (encrypted archive):";
+            label1.Text = "Please choose input files to be archived:";
+            label2.Text = "Please choose output file (archive):";
             if (isManualCompressEncryptCheckChanged)
             {
                 HelperService.importedPaths = new ArrayList();
@@ -790,8 +790,8 @@ namespace Crypt
 
             groupBoxOverwriteFiles.Enabled = true;
             //groupBoxChooseCompressionLevel.Enabled = false;
-            label1.Text = "Please choose input files (encrypted archives) for decryption:";
-            label2.Text = "Please choose output folder for extracting decrypted files:";
+            label1.Text = "Please choose input files (archives) for extraction:";
+            label2.Text = "Please choose output folder for extracting:";
             if (isManualCompressEncryptCheckChanged)
             {
                 HelperService.importedPaths = new ArrayList();
@@ -976,7 +976,7 @@ namespace Crypt
                 }
                 else
                 {
-                    MessageBox.Show("Please select both the input files and the output file in order for the encryption to take place.",
+                    MessageBox.Show("Please select both the input files and the output file for archiving.",
                         "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
@@ -1015,7 +1015,7 @@ namespace Crypt
                     }
                     else if (maskedTextBoxPassword.Enabled == true && string.IsNullOrEmpty(maskedTextBoxPassword.Text))
                     {
-                        MessageBox.Show("Please make sure you have typed a password in order for the decryption to take place.",
+                        MessageBox.Show("Please make sure you have typed a password in order for the extraction to take place.",
                             "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                     else
@@ -1047,7 +1047,7 @@ namespace Crypt
                 }
                 else
                 {
-                    MessageBox.Show("Please select both the input files and the output folder in order for the decryption to take place.",
+                    MessageBox.Show("Please select both the input files and the output folder in order for the extraction to take place.",
                        "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
@@ -1059,8 +1059,10 @@ namespace Crypt
         {
             menuCompressEncryptExtra = new ContextMenu(); // fix for menu item length stretch when switching between encrypt / decrypt
             menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem1);
-            menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem3);
-
+            if (!radioButtonCompressEncrypt.Checked)
+            {
+                menuCompressEncryptExtra.MenuItems.Add(menuCompressEncryptExtraItem3);
+            }
             menuCompressEncryptExtra.Show(btnCompressEncryptExtra, new Point(-HelperService.FindLongestLengthOfElementText(menuCompressEncryptExtra.MenuItems) * 6 * HelperService.scaling / 100, btnCompressEncryptExtra.Size.Height));
         }
 
@@ -1129,7 +1131,7 @@ namespace Crypt
                 btnCompressEncrypt.Image = radioButtonCompressEncrypt.Checked ? Properties.Resources.Encrypt__3D__small : Properties.Resources.Decrypt__3D__small;
                 btnCompressEncrypt.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 btnCompressEncrypt.Text = "";
-                toolTip1.SetToolTip(btnCompressEncrypt, radioButtonCompressEncrypt.Checked ? "Compress & Encrypt" : "Decompress & Decrypt");
+                toolTip1.SetToolTip(btnCompressEncrypt, radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive");
                 btnBrowseInput.Image = Properties.Resources.Plus__3D__small;
                 btnBrowseInput.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 btnBrowseInput.Text = "";
@@ -1175,7 +1177,7 @@ namespace Crypt
             if (HelperService.buttonSetting == HelperService.ButtonSetting.TextOnly) // Text
             {
                 btnCompressEncrypt.Image = null;
-                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Compress && Encrypt" : "Decompress && Decrypt";
+                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive";
                 btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 toolTip1.SetToolTip(btnCompressEncrypt, "");
                 btnBrowseInput.Image = null;
@@ -1224,7 +1226,7 @@ namespace Crypt
             {
                 btnCompressEncrypt.Image = radioButtonCompressEncrypt.Checked ? Properties.Resources.Encrypt__3D__small_2 : Properties.Resources.Decrypt__3D__small_2;
                 btnCompressEncrypt.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Compress && Encrypt" : "Decompress && Decrypt";
+                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive";
                 btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
                 toolTip1.SetToolTip(btnCompressEncrypt, "");
                 btnBrowseInput.Image = Properties.Resources.Plus__3D__small_2;
@@ -1289,13 +1291,13 @@ namespace Crypt
                 btnCompressEncrypt.Image = radioButtonCompressEncrypt.Checked ? Properties.Resources.Encrypt__3D__small : Properties.Resources.Decrypt__3D__small;
                 btnCompressEncrypt.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 btnCompressEncrypt.Text = "";
-                toolTip1.SetToolTip(btnCompressEncrypt, radioButtonCompressEncrypt.Checked ? "Compress && Encrypt" : "Decompress && Decrypt");
+                toolTip1.SetToolTip(btnCompressEncrypt, radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive");
             }
 
             if (HelperService.buttonSetting == HelperService.ButtonSetting.TextOnly)
             {
                 btnCompressEncrypt.Image = null;
-                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Compress && Encrypt" : "Decompress && Decrypt";
+                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive";
                 btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 toolTip1.SetToolTip(btnCompressEncrypt, "");
             }
@@ -1304,7 +1306,7 @@ namespace Crypt
             {
                 btnCompressEncrypt.Image = radioButtonCompressEncrypt.Checked ? Properties.Resources.Encrypt__3D__small_2 : Properties.Resources.Decrypt__3D__small_2;
                 btnCompressEncrypt.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Compress && Encrypt" : "Decompress && Decrypt";
+                btnCompressEncrypt.Text = radioButtonCompressEncrypt.Checked ? "Create Archive" : "Extract Archive";
                 btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
                 toolTip1.SetToolTip(btnCompressEncrypt, "");
             }

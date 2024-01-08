@@ -140,7 +140,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(352, 14);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Please choose input files to be encrypted:";
+            this.label1.Text = "Please choose input files to be archived:";
             // 
             // label2
             // 
@@ -149,7 +149,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(315, 14);
             this.label2.TabIndex = 0;
-            this.label2.Text = "Please choose output file (encrypted archive):";
+            this.label2.Text = "Please choose output file (archive):";
             // 
             // label3
             // 
@@ -215,13 +215,13 @@
             // 
             this.radioButtonUseBuiltInDefault.AutoSize = true;
             this.radioButtonUseBuiltInDefault.Checked = true;
-            this.radioButtonUseBuiltInDefault.Location = new System.Drawing.Point(12, 24);
+            this.radioButtonUseBuiltInDefault.Location = new System.Drawing.Point(12, 23);
             this.radioButtonUseBuiltInDefault.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonUseBuiltInDefault.Name = "radioButtonUseBuiltInDefault";
-            this.radioButtonUseBuiltInDefault.Size = new System.Drawing.Size(116, 17);
+            this.radioButtonUseBuiltInDefault.Size = new System.Drawing.Size(170, 17);
             this.radioButtonUseBuiltInDefault.TabIndex = 0;
             this.radioButtonUseBuiltInDefault.TabStop = true;
-            this.radioButtonUseBuiltInDefault.Text = "Use Built-In Default";
+            this.radioButtonUseBuiltInDefault.Text = "No Encryption (Built-In Default)";
             this.radioButtonUseBuiltInDefault.UseVisualStyleBackColor = true;
             this.radioButtonUseBuiltInDefault.CheckedChanged += new System.EventHandler(this.radioButtonUseBuiltInDefault_CheckedChanged);
             // 
@@ -610,28 +610,26 @@
             // 
             // radioButtonDecompressDecrypt
             // 
-            this.radioButtonDecompressDecrypt.AutoSize = true;
-            this.radioButtonDecompressDecrypt.Location = new System.Drawing.Point(20, 59);
+            this.radioButtonDecompressDecrypt.Location = new System.Drawing.Point(10, 52);
             this.radioButtonDecompressDecrypt.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonDecompressDecrypt.Name = "radioButtonDecompressDecrypt";
-            this.radioButtonDecompressDecrypt.Size = new System.Drawing.Size(62, 17);
+            this.radioButtonDecompressDecrypt.Size = new System.Drawing.Size(99, 35);
             this.radioButtonDecompressDecrypt.TabIndex = 0;
             this.radioButtonDecompressDecrypt.TabStop = true;
-            this.radioButtonDecompressDecrypt.Text = "Decrypt";
+            this.radioButtonDecompressDecrypt.Text = "Extract Archive";
             this.radioButtonDecompressDecrypt.UseVisualStyleBackColor = true;
             this.radioButtonDecompressDecrypt.CheckedChanged += new System.EventHandler(this.radioButtonDecompressDecrypt_CheckedChanged);
             // 
             // radioButtonCompressEncrypt
             // 
-            this.radioButtonCompressEncrypt.AutoSize = true;
             this.radioButtonCompressEncrypt.Checked = true;
-            this.radioButtonCompressEncrypt.Location = new System.Drawing.Point(20, 32);
+            this.radioButtonCompressEncrypt.Location = new System.Drawing.Point(10, 23);
             this.radioButtonCompressEncrypt.Margin = new System.Windows.Forms.Padding(2);
             this.radioButtonCompressEncrypt.Name = "radioButtonCompressEncrypt";
-            this.radioButtonCompressEncrypt.Size = new System.Drawing.Size(61, 17);
+            this.radioButtonCompressEncrypt.Size = new System.Drawing.Size(98, 32);
             this.radioButtonCompressEncrypt.TabIndex = 0;
             this.radioButtonCompressEncrypt.TabStop = true;
-            this.radioButtonCompressEncrypt.Text = "Encrypt";
+            this.radioButtonCompressEncrypt.Text = "Create Archive";
             this.radioButtonCompressEncrypt.UseVisualStyleBackColor = true;
             this.radioButtonCompressEncrypt.CheckedChanged += new System.EventHandler(this.radioButtonCompressEncrypt_CheckedChanged);
             // 
@@ -731,7 +729,7 @@
             this.btnCompressEncrypt.Image = ((System.Drawing.Image)(resources.GetObject("btnCompressEncrypt.Image")));
             this.btnCompressEncrypt.Location = new System.Drawing.Point(3, 3);
             this.btnCompressEncrypt.Name = "btnCompressEncrypt";
-            this.btnCompressEncrypt.Size = new System.Drawing.Size(88, 88);
+            this.btnCompressEncrypt.Size = new System.Drawing.Size(87, 88);
             this.btnCompressEncrypt.TabIndex = 0;
             this.btnCompressEncrypt.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.toolTip1.SetToolTip(this.btnCompressEncrypt, "Compress & Encrypt");
@@ -743,7 +741,7 @@
             this.btnCompressEncryptExtra.FlatAppearance.BorderSize = 0;
             this.btnCompressEncryptExtra.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCompressEncryptExtra.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCompressEncryptExtra.Location = new System.Drawing.Point(97, 3);
+            this.btnCompressEncryptExtra.Location = new System.Drawing.Point(96, 3);
             this.btnCompressEncryptExtra.Name = "btnCompressEncryptExtra";
             this.btnCompressEncryptExtra.Size = new System.Drawing.Size(16, 88);
             this.btnCompressEncryptExtra.TabIndex = 0;
@@ -840,7 +838,6 @@
             this.panel1.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBoxChooseOperatingMode.ResumeLayout(false);
-            this.groupBoxChooseOperatingMode.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel6.ResumeLayout(false);

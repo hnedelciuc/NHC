@@ -19,7 +19,7 @@ internal class CryptionService
     // Default values used for cryption:
     // Note: For Password-Based cryption, the following saltValue and initVector strings will be modified 
     //       by combining them with the user-provided passPhrase.
-    // Note: For Key-Based "Use Built-In Default" option, all these values will be used.
+    // Note: For Key-Based "No Encryption (Built-In Default)" option, all these values will be used.
 
     internal static string saltVal = @"k]j%V_M>J);(9{)C#/avd#sTM?w@Mx4}<hH`1WgjJPz7rt=RAekh?pV*B\LX3:3.";  // can be any string, this one is 64 bytes.
     internal static string initVect = "{>NR6F#~(3?E!yXU";   // must be 16 bytes.

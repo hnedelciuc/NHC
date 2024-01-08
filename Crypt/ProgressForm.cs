@@ -102,11 +102,11 @@ namespace Crypt
             }
             if (cryptionOptions == HelperService.CryptionOptions.Encrypt)
             {
-                labelCompressEncrypt.Text = "Compressing && Encrypting...";
+                labelCompressEncrypt.Text = "Creating Archive...";
             }
             else if (cryptionOptions == HelperService.CryptionOptions.Decrypt)
             {
-                labelCompressEncrypt.Text = "Decompressing && Decrypting...";
+                labelCompressEncrypt.Text = "Extracting Archive...";
             }
             else if (cryptionOptions == HelperService.CryptionOptions.Update)
             {
@@ -171,7 +171,7 @@ namespace Crypt
                             }
                             catch (Exception ex)
                             {
-                                resultMessage = "There was an error during encryption." +
+                                resultMessage = "There was an error during archiving." +
                                     Environment.NewLine + Environment.NewLine + ex.Message;
                                 compressEncryptSuccess = false;
                             }
@@ -185,13 +185,13 @@ namespace Crypt
                             {
                                 // Displays the Success Message.
                                 resultMessage = "Success" + Environment.NewLine + Environment.NewLine +
-                                    items.Count + " entries have been compressed && encrypted successfully.";
+                                    items.Count + " entries have been archived successfully.";
                             }
                             else
                             {
                                 // Displays the Fail Message.
                                 resultMessage = "Fail" + Environment.NewLine + Environment.NewLine +
-                                    $"{numberOfEntriesProcessed} out of {items.Count} entries have been compressed && encrypted." +
+                                    $"{numberOfEntriesProcessed} out of {items.Count} entries have been archived." +
                                     Environment.NewLine + Environment.NewLine + resultMessage;
                             }
 
@@ -279,7 +279,7 @@ namespace Crypt
                         }
                         catch (Exception ex)
                         {
-                            resultMessage = "The file " + inputFileName + " could not be decompressed / decrypted." +
+                            resultMessage = "The file " + inputFileName + " could not be extracted." +
                                 Environment.NewLine + Environment.NewLine + ex.Message;
                         }
                         finally
@@ -291,7 +291,7 @@ namespace Crypt
                         {
                             // Displays the Success Message.
                             resultMessage = "Success" + Environment.NewLine + Environment.NewLine +
-                                itemsList.Count + " crypted archive files have been decompressed && decrypted successfully. " +
+                                itemsList.Count + " archived files have been extracted successfully. " +
                                 Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed +
                                 " entries have been extracted.";
                         }
@@ -300,7 +300,7 @@ namespace Crypt
                         {
                             // Displays the Success Message.
                             resultMessage = "Partial Success / Partial Fail" + Environment.NewLine + Environment.NewLine +
-                                decryptCount + " crypted files have been decompressed && decrypted successfully, while " +
+                                decryptCount + " archived files have been extracted successfully, while " +
                                 (itemsList.Count - decryptCount) + " have failed, and the failure occured at " +
                                 inputFileName + " file." + Environment.NewLine + Environment.NewLine +
                                 resultMessage + Environment.NewLine + Environment.NewLine +
@@ -309,7 +309,7 @@ namespace Crypt
                         else
                         {
                             resultMessage = "Fail" + Environment.NewLine + Environment.NewLine +
-                                "Decompressing && decrypting entries has stopped." +
+                                "Extracting entries has stopped." +
                             Environment.NewLine + Environment.NewLine + resultMessage +
                             Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed + " entries have been extracted.";
                         }
@@ -465,7 +465,7 @@ namespace Crypt
                         {
                             // Displays the Success Message.
                             resultMessage = "Success" + Environment.NewLine + Environment.NewLine +
-                                outputFileName + " crypted archive has been updated successfully. " +
+                                outputFileName + " archive has been updated successfully. " +
                                 Environment.NewLine + Environment.NewLine + numberOfEntriesProcessed +
                                 " entries have been added.";
                         }
